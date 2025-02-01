@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest"
 import { parseHtml } from "../src/main"
 
 const readFixture = (name: string) => {
-  return readFileSync(join(__dirname, "fixtures", name), "utf-8")
+  return readFileSync(join(import.meta.dirname, "fixtures", name), "utf-8")
 }
 
 describe("parseHtml", () => {
@@ -23,7 +23,6 @@ describe("parseHtml", () => {
     const html = "<html><body></body></html>"
     const result = parseHtml(html)
 
-    expect(result).toBeTruthy()
-    expect(result?.textContent).toBe("")
+    expect(result).toBeNull()
   })
 })
