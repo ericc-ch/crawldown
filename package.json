@@ -2,7 +2,14 @@
   "name": "html2md",
   "version": "0.0.0",
   "description": "Convert HTML pages into clean, readable Markdown content using Mozilla's Readability and Turndown",
-  "keywords": ["readability", "markdown", "turndown", "mozilla", "converter", "html-to-markdown"],
+  "keywords": [
+    "readability",
+    "markdown",
+    "turndown",
+    "mozilla",
+    "converter",
+    "html-to-markdown"
+  ],
   "homepage": "https://github.com/ericc-ch/html2md#readme",
   "bugs": "https://github.com/ericc-ch/html2md/issues",
   "repository": {
@@ -46,6 +53,10 @@
   "lint-staged": {
     "*": "eslint --fix"
   },
+  "dependencies": {
+    "@mozilla/readability": "^0.5.0",
+    "turndown": "^7.2.0"
+  },
   "devDependencies": {
     "@echristian/eslint-config": "^0.0.16",
     "@types/node": "^22.13.0",
@@ -59,9 +70,5 @@
     "vite": "^6.0.11",
     "vitest": "^3.0.4"
   },
-  "packageManager": "pnpm@10.1.0",
-  "dependencies": {
-    "@mozilla/readability": "^0.5.0",
-    "turndown": "^7.1.2"
-  }
+  "packageManager": "pnpm@10.1.0"
 }
