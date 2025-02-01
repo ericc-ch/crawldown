@@ -3,7 +3,9 @@ import { JSDOM } from "jsdom"
 
 export function parseHtml(html: string) {
   const dom = new JSDOM(html)
-  const reader = new Readability(dom.window.document)
+  const reader = new Readability(dom.window.document, {
+    debug: true,
+  })
   const article = reader.parse()
 
   console.log("Title:", article?.title)
