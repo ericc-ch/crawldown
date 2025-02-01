@@ -1,13 +1,13 @@
 {
-  "name": "pkg-placeholder",
+  "name": "html2md",
   "version": "0.0.0",
-  "description": "_description_",
-  "keywords": [],
-  "homepage": "https://github.com/ericc-ch/pkg-placeholder#readme",
-  "bugs": "https://github.com/ericc-ch/pkg-placeholder/issues",
+  "description": "Convert HTML pages into clean, readable Markdown content using Mozilla's Readability and Turndown",
+  "keywords": ["readability", "markdown", "turndown", "mozilla", "converter", "html-to-markdown"],
+  "homepage": "https://github.com/ericc-ch/html2md#readme",
+  "bugs": "https://github.com/ericc-ch/html2md/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ericc-ch/pkg-placeholder.git"
+    "url": "git+https://github.com/ericc-ch/html2md.git"
   },
   "author": "Erick Christian <erickchristian48@gmail.com>",
   "sideEffects": false,
@@ -61,6 +61,7 @@
   },
   "packageManager": "pnpm@10.1.0",
   "dependencies": {
-    "@mozilla/readability": "^0.5.0"
+    "@mozilla/readability": "^0.5.0",
+    "turndown": "^7.1.2"
   }
 }
