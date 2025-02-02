@@ -72,5 +72,11 @@
     "vite": "^6.0.11",
     "vitest": "^3.0.4"
   },
-  "packageManager": "pnpm@10.1.0"
+  "packageManager": "pnpm@10.1.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "simple-git-hooks"
+    ]
+  }
 }
