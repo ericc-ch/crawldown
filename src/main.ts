@@ -11,7 +11,7 @@ export function parseHtml(html: string) {
   if (article?.content) {
     const turndownService = new TurndownService()
     const markdown = turndownService.turndown(article.content)
-    
+
     fs.writeFileSync("article.md", markdown)
     console.log("Article markdown content has been written to article.md")
   }

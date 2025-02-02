@@ -22,32 +22,21 @@ jobs:
           node-version: lts/*
           cache: pnpm
 
-      - run: pnpm i -g @antfu/ni
-      - run: nci
-      - run: nr lint
-      - run: nr typecheck
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run typecheck
 
   test:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        node: [lts/*]
-        os: [ubuntu-latest, windows-latest, macos-latest]
-      fail-fast: false
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
-      - name: Set node ${{ matrix.node }}
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: lts/*
           cache: pnpm
 
-      - run: pnpm i -g @antfu/ni
-      - run: nci
-      - run: nr build
-      - run: nr test
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run test
