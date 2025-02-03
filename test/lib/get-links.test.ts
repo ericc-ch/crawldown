@@ -30,6 +30,18 @@ describe("getLinks", () => {
     const html = `
       <a href=" https://example.com/page  ">Link</a>
     `
-    expect(getLinks(html)).toEqual(["https://example.com/page"])
+    expect(getLinks(html, "https://example.com")).toEqual([
+      "https://example.com/page",
+    ])
+  })
+
+  it("ignores links from different origins", () => {
+    const html = `
+      <a href="https://example.com/page">Same origin</a>
+      <a href="https://different.com/page">Different origin</a>
+    `
+    expect(getLinks(html, "https://example.com")).toEqual([
+      "https://example.com/page",
+    ])
   })
 })
