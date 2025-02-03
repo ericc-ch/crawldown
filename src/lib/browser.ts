@@ -1,13 +1,18 @@
 import { Browser, Page, chromium } from "playwright"
 
+import { getConfig } from "./config"
+
 let browser: Browser | null = null
 
 async function getBrowser(): Promise<Browser> {
   if (!browser) {
+    const config = getConfig()
+
     browser = await chromium.launch({
-      headless: true,
+      executablePath: config.browserPath ?? undefined,
     })
   }
+
   return browser
 }
 
