@@ -1,5 +1,7 @@
 import { defineCommand, runMain } from "citty"
 import consola from "consola"
+import { writeFile, mkdir } from "fs/promises"
+import { join } from "path"
 
 import { cleanup } from "./lib/browser"
 import { setConfig } from "./lib/config"
@@ -33,6 +35,13 @@ const main = defineCommand({
         "Path to browser executable. Will use playwright default if not provided",
       required: false,
     },
+    output: {
+      alias: "o",
+      type: "string",
+      default: "output",
+      description: "Output directory",
+      required: false,
+    },
   },
   run: async ({ args }) => {
     const {
@@ -40,10 +49,10 @@ const main = defineCommand({
       "crawl-depth": crawlDepthString,
       verbose,
       "browser-path": browserPath,
+      output,
     } = args
     const crawlDepth = parseInt(crawlDepthString, 10)
 
-    // Set consola level to 4 (debug) if verbose is true
     if (verbose) {
       consola.level = 4
     }
@@ -53,7 +62,45 @@ const main = defineCommand({
     }
 
     const results = await parseHtml({ url, crawlDepth })
-    console.log(JSON.stringify(results, null, 2))
+
+    // Create the base output directory
+    await mkdir(output, { recursive: true })
+
+    // Process each result and write to files
+    for (const result of results) {
+      try {
+        // Create a sanitized directory name from the URL
+        const urlObj = new URL(result.url)
+        const sanitizedPath = urlObj.pathname
+          .replace(/\/$/, "") // Remove trailing slash
+          .replace(/^\//, "") // Remove leading slash
+          .replace(/[^a-zA-Z0-9/]/g, "_") // Replace special chars with underscore
+
+        // Calculate the file name from the path parts
+        const pathParts = sanitizedPath.split("/")
+        const fileName = (pathParts.pop() ?? "index") + ".md" // Use 'index' if path ends in slash
+        const dirPath = join(output, urlObj.hostname, pathParts.join("/"))
+        const filePath = join(dirPath, fileName)
+
+        // Create directory
+        await mkdir(dirPath, { recursive: true })
+
+        // Create the content with frontmatter
+        const content = [
+          "---",
+          `title: ${JSON.stringify(result.title)}`,
+          `url: ${result.url}`,
+          "---",
+          "",
+          result.markdown,
+        ].join("\n")
+
+        await writeFile(filePath, content)
+        consola.success(`Written: ${filePath}`)
+      } catch (error) {
+        consola.error(`Failed to write file for ${result.url}:`, error)
+      }
+    }
   },
   cleanup: async () => {
     await cleanup()
