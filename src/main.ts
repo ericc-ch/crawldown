@@ -1,4 +1,5 @@
 import { Readability } from "@mozilla/readability"
+import consola from "consola"
 import { JSDOM } from "jsdom"
 import TurndownService from "turndown"
 
@@ -20,22 +21,28 @@ interface ParseResult {
 export async function parseHtml(
   options: ParseOptions,
 ): Promise<Array<ParseResult>> {
+  consola.start(`Processing ${options.url}`)
+
   // Initialize parsedUrls Set at the top level of recursion
   if (!options._parsedUrls) {
     options._parsedUrls = new Set<string>()
+    consola.debug("Initializing new parsed URLs set")
   }
 
   // Skip if we've already parsed this URL
   if (options._parsedUrls.has(options.url)) {
+    consola.debug(`Skipping already parsed URL: ${options.url}`)
     return []
   }
 
   // Mark this URL as parsed
   options._parsedUrls.add(options.url)
+  consola.debug(`Added ${options.url} to parsed URLs set`)
 
   const results: Array<ParseResult> = []
 
   // Fetch the HTML content
+  consola.info(`Scraping HTML from ${options.url}`)
   const html = await scrapeHtml(options.url)
 
   const dom = new JSDOM(html)
@@ -43,6 +50,7 @@ export async function parseHtml(
   const article = reader.parse()
 
   if (article?.content) {
+    consola.debug(`Successfully parsed article content for ${options.url}`)
     const turndownService = new TurndownService()
     const markdown = turndownService.turndown(article.content)
     results.push({
@@ -56,14 +64,20 @@ export async function parseHtml(
       const urlObject = new URL(options.url)
       const origin = urlObject.origin
 
+      consola.info(
+        `Extracting links from ${options.url} (depth: ${options.crawlDepth})`,
+      )
       const links = getLinks(html, origin)
+      consola.debug(`Found ${links.length} links to process`)
 
       for (const link of links) {
         // Skip already parsed URLs
         if (options._parsedUrls.has(link)) {
+          consola.debug(`Skipping already processed link: ${link}`)
           continue
         }
 
+        consola.info(`Processing sub-link: ${link}`)
         const subResults = await parseHtml({
           url: link,
           crawlDepth: options.crawlDepth - 1,
@@ -72,7 +86,10 @@ export async function parseHtml(
         results.push(...subResults)
       }
     }
+  } else {
+    consola.debug(`No article content found for ${options.url}`)
   }
 
+  consola.success(`Completed processing ${options.url}`)
   return results
 }
