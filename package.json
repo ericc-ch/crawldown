@@ -1,14 +1,16 @@
 {
-  "name": "html2md",
+  "name": "@echristian/web2md",
   "version": "0.0.1",
-  "description": "Convert HTML pages into clean, readable Markdown content using Mozilla's Readability and Turndown",
+  "description": "Crawl websites and convert their content into clean, readable Markdown using Mozilla's Readability and Turndown",
   "keywords": [
+    "web-crawler",
     "readability",
     "markdown",
     "turndown",
     "mozilla",
     "converter",
-    "html-to-markdown"
+    "html-to-markdown",
+    "website-scraper"
   ],
   "homepage": "https://github.com/ericc-ch/html2md#readme",
   "bugs": "https://github.com/ericc-ch/html2md/issues",
@@ -35,7 +37,7 @@
     "lint": "eslint .",
     "prepare": "simple-git-hooks",
     "prepublishOnly": "pnpm run build",
-    "release": "bumpp && pnpm publish",
+    "release": "bumpp && pnpm publish --access public",
     "start": "tsx src/cli.ts",
     "test": "vitest",
     "typecheck": "tsc --noEmit"

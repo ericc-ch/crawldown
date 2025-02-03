@@ -18,7 +18,7 @@ interface ParseResult {
   title: string
 }
 
-export async function parseHtml(
+export async function crawl(
   options: ParseOptions,
 ): Promise<Array<ParseResult>> {
   consola.start(`Processing ${options.url}`)
@@ -78,7 +78,7 @@ export async function parseHtml(
         }
 
         consola.info(`Processing sub-link: ${link}`)
-        const subResults = await parseHtml({
+        const subResults = await crawl({
           url: link,
           crawlDepth: options.crawlDepth - 1,
           _parsedUrls: options._parsedUrls,

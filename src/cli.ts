@@ -5,7 +5,7 @@ import { join } from "path"
 
 import { cleanup } from "./lib/browser"
 import { setConfig } from "./lib/config"
-import { parseHtml } from "./main"
+import { crawl } from "./main"
 
 const main = defineCommand({
   args: {
@@ -68,7 +68,7 @@ const main = defineCommand({
       setConfig({ browserPath })
     }
 
-    const results = await parseHtml({ url, crawlDepth })
+    const results = await crawl({ url, crawlDepth })
 
     // Create the base output directory
     await mkdir(output, { recursive: true })
