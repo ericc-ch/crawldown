@@ -18,8 +18,14 @@
   },
   "author": "Erick Christian <erickchristian48@gmail.com>",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/main.d.ts",
+      "default": "./dist/main.js"
+    }
+  },
   "bin": {
-    "html2md": "./dist/main.js"
+    "html2md": "./dist/cli.js"
   },
   "files": [
     "dist"
@@ -42,6 +48,7 @@
   },
   "dependencies": {
     "@mozilla/readability": "^0.5.0",
+    "citty": "^0.1.6",
     "jsdom": "^26.0.0",
     "turndown": "^7.2.0"
   },
