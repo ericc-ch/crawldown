@@ -36,7 +36,7 @@
     "prepare": "simple-git-hooks",
     "prepublishOnly": "pnpm run build",
     "release": "bumpp && pnpm publish",
-    "start": "tsx src/index.ts",
+    "start": "tsx src/cli.ts",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },

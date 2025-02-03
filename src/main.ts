@@ -18,7 +18,6 @@ interface ParseResult {
 }
 
 export async function parseHtml(
-  html: string,
   options: ParseOptions,
 ): Promise<Array<ParseResult>> {
   // Initialize parsedUrls Set at the top level of recursion
@@ -35,6 +34,9 @@ export async function parseHtml(
   options._parsedUrls.add(options.url)
 
   const results: Array<ParseResult> = []
+
+  // Fetch the HTML content
+  const html = await scrapeHtml(options.url)
 
   const dom = new JSDOM(html)
   const reader = new Readability(dom.window.document)
@@ -62,8 +64,7 @@ export async function parseHtml(
           continue
         }
 
-        const linkedHtml = await scrapeHtml(link)
-        const subResults = await parseHtml(linkedHtml, {
+        const subResults = await parseHtml({
           url: link,
           crawlDepth: options.crawlDepth - 1,
           _parsedUrls: options._parsedUrls,
