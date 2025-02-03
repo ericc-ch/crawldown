@@ -1,6 +1,6 @@
 import { Readability } from "@mozilla/readability"
-import * as fs from "fs"
 import { JSDOM } from "jsdom"
+import * as fs from "node:fs"
 import TurndownService from "turndown"
 
 export function parseHtml(html: string) {
