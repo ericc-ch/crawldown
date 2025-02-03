@@ -42,6 +42,12 @@ const main = defineCommand({
       description: "Output directory",
       required: false,
     },
+    "single-file": {
+      type: "boolean",
+      default: false,
+      description: "Output all results to a single markdown file",
+      required: false,
+    },
   },
   run: async ({ args }) => {
     const {
@@ -50,6 +56,7 @@ const main = defineCommand({
       verbose,
       "browser-path": browserPath,
       output,
+      "single-file": singleFile,
     } = args
     const crawlDepth = parseInt(crawlDepthString, 10)
 
@@ -65,6 +72,13 @@ const main = defineCommand({
 
     // Create the base output directory
     await mkdir(output, { recursive: true })
+
+    if (singleFile) {
+      const outputFile = join(output, "contents.md")
+      await writeToSingleFile(outputFile, results)
+
+      return
+    }
 
     // Process each result and write to files
     for (const result of results) {
@@ -114,6 +128,28 @@ async function writeMarkdownFile(
 
   await writeFile(filePath, content)
   consola.success(`Written: ${filePath}`)
+}
+
+async function writeToSingleFile(
+  outputPath: string,
+  results: Array<{ title: string; url: string; markdown: string }>,
+): Promise<void> {
+  const content = results
+    .map(
+      (result) => `# ${result.title}
+
+Source: ${result.url}
+
+${result.markdown}
+
+---
+
+`,
+    )
+    .join("\n")
+
+  await writeFile(outputPath, content)
+  consola.success(`Written all content to: ${outputPath}`)
 }
 
 void runMain(main)
