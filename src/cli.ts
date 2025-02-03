@@ -69,34 +69,26 @@ const main = defineCommand({
     // Process each result and write to files
     for (const result of results) {
       try {
-        // Create a sanitized directory name from the URL
         const urlObj = new URL(result.url)
         const sanitizedPath = urlObj.pathname
           .replace(/\/$/, "") // Remove trailing slash
           .replace(/^\//, "") // Remove leading slash
           .replace(/[^a-zA-Z0-9/]/g, "_") // Replace special chars with underscore
 
-        // Calculate the file name from the path parts
-        const pathParts = sanitizedPath.split("/")
-        const fileName = (pathParts.pop() ?? "index") + ".md" // Use 'index' if path ends in slash
-        const dirPath = join(output, urlObj.hostname, pathParts.join("/"))
-        const filePath = join(dirPath, fileName)
+        let dirPath: string
+        let fileName: string
 
-        // Create directory
+        if (!sanitizedPath) {
+          dirPath = join(output, urlObj.hostname)
+          fileName = "index.md"
+        } else {
+          const pathParts = sanitizedPath.split("/")
+          fileName = `${pathParts.pop()}.md`
+          dirPath = join(output, urlObj.hostname, pathParts.join("/"))
+        }
+
         await mkdir(dirPath, { recursive: true })
-
-        // Create the content with frontmatter
-        const content = [
-          "---",
-          `title: ${JSON.stringify(result.title)}`,
-          `url: ${result.url}`,
-          "---",
-          "",
-          result.markdown,
-        ].join("\n")
-
-        await writeFile(filePath, content)
-        consola.success(`Written: ${filePath}`)
+        await writeMarkdownFile(join(dirPath, fileName), result)
       } catch (error) {
         consola.error(`Failed to write file for ${result.url}:`, error)
       }
@@ -106,5 +98,22 @@ const main = defineCommand({
     await cleanup()
   },
 })
+
+async function writeMarkdownFile(
+  filePath: string,
+  result: { title: string; url: string; markdown: string },
+): Promise<void> {
+  const content = [
+    "---",
+    `title: ${JSON.stringify(result.title)}`,
+    `url: ${result.url}`,
+    "---",
+    "",
+    result.markdown,
+  ].join("\n")
+
+  await writeFile(filePath, content)
+  consola.success(`Written: ${filePath}`)
+}
 
 void runMain(main)
