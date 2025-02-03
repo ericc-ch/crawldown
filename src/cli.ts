@@ -8,6 +8,11 @@ import { setConfig } from "./lib/config"
 import { crawl } from "./main"
 
 const main = defineCommand({
+  meta: {
+    name: "web2md",
+    description:
+      "Crawl websites and convert their content into clean, readable Markdown using Mozilla's Readability and Turndown",
+  },
   args: {
     url: {
       type: "positional",
