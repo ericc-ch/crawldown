@@ -18,7 +18,9 @@
   },
   "author": "Erick Christian <erickchristian48@gmail.com>",
   "type": "module",
-  "bin": {},
+  "bin": {
+    "html2md": "./dist/main.js"
+  },
   "files": [
     "dist"
   ],
