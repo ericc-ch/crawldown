@@ -21,6 +21,11 @@ export function getLinks(html: string): Array<string> {
         !href.startsWith("tel:") &&
         !href.startsWith("#"),
     )
+    .map((href) => {
+      // Remove hash fragments and URL parameters
+      const url = new URL(href, "http://base") // Using dummy base URL for relative paths
+      return url.origin + url.pathname
+    })
 
   return [...new Set(links)] // Remove duplicates
 }
