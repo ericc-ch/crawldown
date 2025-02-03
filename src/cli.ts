@@ -20,7 +20,7 @@ const main = defineCommand({
       valueHint: "https://example.com",
       required: true,
     },
-    "crawl-depth": {
+    depth: {
       alias: "d",
       type: "string",
       default: "1",
@@ -57,13 +57,13 @@ const main = defineCommand({
   run: async ({ args }) => {
     const {
       url,
-      "crawl-depth": crawlDepthString,
+      depth: depthString,
       verbose,
       "browser-path": browserPath,
       output,
       "single-file": singleFile,
     } = args
-    const crawlDepth = parseInt(crawlDepthString, 10)
+    const depth = parseInt(depthString, 10)
 
     if (verbose) {
       consola.level = 4
@@ -73,7 +73,7 @@ const main = defineCommand({
       setConfig({ browserPath })
     }
 
-    const results = await crawl({ url, crawlDepth })
+    const results = await crawl({ url, depth })
 
     // Create the base output directory
     await mkdir(output, { recursive: true })

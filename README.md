@@ -31,32 +31,32 @@ yarn add @echristian/web2md
 
 ## CLI Usage
 
-html2md provides a command-line interface for easy conversion:
+The package provides a command-line interface for easy conversion:
 
 ```bash
 # Basic usage
-html2md https://example.com
+npx @echristian/web2md https://example.com
 
 # Specify crawl depth (default: 1)
-html2md https://example.com -d 2
+npx @echristian/web2md https://example.com -d 2
 
 # Custom output directory (default: output)
-html2md https://example.com -o my-docs
+npx @echristian/web2md https://example.com -o my-docs
 
 # Output to a single file
-html2md https://example.com --single-file
+npx @echristian/web2md https://example.com --single-file
 
 # Enable verbose logging
-html2md https://example.com -v
+npx @echristian/web2md https://example.com -v
 
 # Specify custom browser path
-html2md https://example.com --browser-path /path/to/chrome
+npx @echristian/web2md https://example.com --browser-path /path/to/chrome
 ```
 
 ### CLI Options
 
 - `url`: URL to scrape (required)
-- `-d, --crawl-depth`: Number of levels to crawl (default: "1")
+- `-d, --depth`: Number of levels to crawl (default: "1")
 - `-v, --verbose`: Enable verbose logging
 - `--browser-path`: Path to browser executable
 - `-o, --output`: Output directory (default: "output")
@@ -64,7 +64,7 @@ html2md https://example.com --browser-path /path/to/chrome
 
 ## Programmatic Usage
 
-You can also use html2md programmatically in your Node.js applications:
+You can also use the package programmatically in your Node.js applications:
 
 ```typescript
 import { crawl } from '@echristian/web2md'
@@ -72,7 +72,7 @@ import { crawl } from '@echristian/web2md'
 async function main() {
   const results = await crawl({
     url: 'https://example.com',
-    crawlDepth: 1, // Optional: how deep to crawl links
+    depth: 1, // Optional: how deep to crawl links
   })
 
   // Each result contains:

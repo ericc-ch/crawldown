@@ -8,7 +8,7 @@ import { scrapeHtml } from "./lib/scrape"
 
 interface ParseOptions {
   url: string
-  crawlDepth?: number
+  depth?: number
   _parsedUrls?: Set<string> // Internal tracking of parsed URLs
 }
 
@@ -59,13 +59,13 @@ export async function crawl(
       title: article.title,
     })
 
-    if (options.crawlDepth && options.crawlDepth > 0) {
+    if (options.depth && options.depth > 0) {
       // Extract origin from the current URL
       const urlObject = new URL(options.url)
       const origin = urlObject.origin
 
       consola.info(
-        `Extracting links from ${options.url} (depth: ${options.crawlDepth})`,
+        `Extracting links from ${options.url} (depth: ${options.depth})`,
       )
       const links = getLinks(html, origin)
       consola.debug(`Found ${links.length} links to process`)
@@ -80,7 +80,7 @@ export async function crawl(
         consola.info(`Processing sub-link: ${link}`)
         const subResults = await crawl({
           url: link,
-          crawlDepth: options.crawlDepth - 1,
+          depth: options.depth - 1,
           _parsedUrls: options._parsedUrls,
         })
         results.push(...subResults)
