@@ -3,6 +3,7 @@ import consola from "consola"
 import defu from "defu"
 import { JSDOM } from "jsdom"
 import TurndownService from "turndown"
+import { withoutTrailingSlash } from "ufo"
 
 import { getLinks } from "./lib/get-links"
 import { scrapeHtml } from "./lib/scrape"
@@ -30,7 +31,13 @@ const defaultOptions: Partial<CrawlOptions> = {
 export async function crawl(
   options: CrawlOptions,
 ): Promise<Array<CrawlResult>> {
-  const { url, depth } = defu(options, defaultOptions) as Required<CrawlOptions>
+  const processedOptions = defu(
+    options,
+    defaultOptions,
+  ) as Required<CrawlOptions>
+
+  processedOptions.url = withoutTrailingSlash(processedOptions.url)
+
   const turndownService = new TurndownService({
     headingStyle: "atx",
     hr: "---",
@@ -38,12 +45,15 @@ export async function crawl(
     codeBlockStyle: "fenced",
   })
 
-  consola.start(`Crawling ${url}`)
-  consola.debug(`Options: ${JSON.stringify(options, null, 2)}`)
+  consola.start(`Starting job for: ${processedOptions.url}`)
+  consola.debug(`Options: `)
+  consola.debug(processedOptions)
 
   const results: Array<CrawlResult> = []
-  const queue: Array<QueueItem> = [{ url: url, depth }]
-  const parsedUrls = new Set<string>()
+  const queue: Array<QueueItem> = [
+    { url: processedOptions.url, depth: processedOptions.depth },
+  ]
+  const processedUrls = new Set<string>()
 
   while (queue.length > 0) {
     // We already checked if the queue is not empty
@@ -51,34 +61,33 @@ export async function crawl(
     const current = queue.shift()!
 
     // Skip if already parsed
-    if (parsedUrls.has(current.url)) {
+    if (processedUrls.has(current.url)) {
       consola.debug(`Skipping already parsed URL: ${current.url}`)
       continue
     }
 
-    consola.info(`Scraping: ${current.url}, current depth: ${current.depth}`)
+    consola.info(`Crawling ${current.url}, current depth: ${current.depth}`)
 
-    // Mark this URL as parsed
-    parsedUrls.add(current.url)
-    consola.debug(`Added ${current.url} to parsed URLs set`)
-
-    // Fetch the HTML content
-    consola.info(`Scraping HTML from ${current.url}`)
+    consola.debug(`Scraping HTML from ${current.url}`)
     const html = await scrapeHtml(current.url)
+    consola.debug(`Scraped HTML from ${current.url}`)
 
+    consola.debug(`Parsing article content for ${current.url}`)
     const dom = new JSDOM(html)
     const reader = new Readability(dom.window.document)
     const article = reader.parse()
 
     // Skip if readability can't find any content
     if (!article?.content) {
-      consola.debug(`No article content found for ${current.url}`)
+      consola.warn(`No article content found for ${current.url}`)
       continue
     }
 
-    consola.debug(`Successfully parsed article content for ${current.url}`)
+    consola.debug(`Parsed article content for ${current.url}`)
 
+    consola.debug(`Converting to markdown for ${current.url}`)
     const markdown = turndownService.turndown(article.content)
+    consola.debug(`Converted to markdown for ${current.url}`)
 
     results.push({
       url: current.url,
@@ -86,32 +95,32 @@ export async function crawl(
       title: article.title,
     })
 
+    processedUrls.add(current.url)
+    consola.debug(`Marked ${current.url} as processed`)
+
     if (current.depth === 0) {
       continue
     }
 
     // If we still have depth to go, add links to queue
-
-    consola.info(
-      `Extracting links from ${current.url}, current depth: ${current.depth}`,
-    )
+    consola.debug(`Extracting links from ${current.url}`)
 
     const links = getLinks(html, current.url)
 
-    consola.debug(`Found ${links.length} links to process`)
+    consola.debug(`Found ${links.length} links`)
     consola.debug(`Links: \n${links.join("\n")}`)
 
     for (const link of links) {
-      if (parsedUrls.has(link)) {
+      if (processedUrls.has(link)) {
         consola.debug(`Skipping already processed link: ${link}`)
         continue
       }
 
-      consola.debug(`Adding ${link} queue with depth: ${current.depth - 1}`)
       queue.push({
-        url: link,
+        url: withoutTrailingSlash(link),
         depth: current.depth - 1,
       })
+      consola.debug(`Queued ${link} for crawling`)
     }
   }
 

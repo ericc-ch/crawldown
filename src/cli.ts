@@ -23,7 +23,7 @@ const main = defineCommand({
     depth: {
       alias: "d",
       type: "string",
-      default: "1",
+      default: "0",
       description: "Number of levels to crawl",
       required: false,
     },
