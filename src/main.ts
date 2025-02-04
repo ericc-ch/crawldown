@@ -5,28 +5,19 @@ import { JSDOM } from "jsdom"
 import TurndownService from "turndown"
 import { withoutTrailingSlash } from "ufo"
 
+import { setConfig } from "./lib/config"
 import { getLinks } from "./lib/get-links"
 import { scrapeHtml } from "./lib/scrape"
+import { CrawlOptions, CrawlResult } from "./types"
 
 interface QueueItem {
   url: string
   depth: number
 }
 
-interface CrawlOptions {
-  url: string
-  depth?: number
-}
-
-interface CrawlResult {
-  url: string
-  markdown: string
-  title: string
-}
-
-const defaultOptions: Partial<CrawlOptions> = {
+export const defaultOptions = {
   depth: 0,
-}
+} satisfies Partial<CrawlOptions>
 
 export async function crawl(
   options: CrawlOptions,
@@ -37,6 +28,10 @@ export async function crawl(
   ) as Required<CrawlOptions>
 
   processedOptions.url = withoutTrailingSlash(processedOptions.url)
+
+  if (processedOptions.browserPath) {
+    setConfig({ browserPath: processedOptions.browserPath })
+  }
 
   const turndownService = new TurndownService({
     headingStyle: "atx",

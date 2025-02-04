@@ -4,8 +4,7 @@ import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 
 import { cleanup } from "./lib/browser"
-import { setConfig } from "./lib/config"
-import { crawl } from "./main"
+import { crawl, defaultOptions } from "./main"
 
 const main = defineCommand({
   meta: {
@@ -23,7 +22,7 @@ const main = defineCommand({
     depth: {
       alias: "d",
       type: "string",
-      default: "0",
+      default: defaultOptions.depth.toString(),
       description: "Number of levels to crawl",
       required: false,
     },
@@ -69,11 +68,7 @@ const main = defineCommand({
       consola.level = 4
     }
 
-    if (browserPath) {
-      setConfig({ browserPath })
-    }
-
-    const results = await crawl({ url, depth })
+    const results = await crawl({ url, depth, browserPath })
 
     // Create the base output directory
     await mkdir(output, { recursive: true })

@@ -10,6 +10,9 @@ export function getConfig(): Config {
   return config
 }
 
-export function setConfig(newConfig: Config): void {
-  config = newConfig
+export function setConfig(newConfig: Partial<Config>): void {
+  config = {
+    ...config,
+    ...newConfig,
+  }
 }
