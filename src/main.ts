@@ -65,6 +65,7 @@ export async function crawl(
       )
       const links = getLinks(html, options.url)
       consola.debug(`Found ${links.length} links to process`)
+      consola.debug(`Links: \n${links.join("\n")}`)
 
       for (const link of links) {
         // Skip already parsed URLs

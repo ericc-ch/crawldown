@@ -1,47 +1,83 @@
 import { describe, it, expect } from "vitest"
 
 import { getLinks } from "../../src/lib/get-links"
-import { readFixture } from "../utils"
 
 describe("getLinks", () => {
-  it("extracts links from HTML", () => {
-    const html = readFixture("Getting Started _ Guide _ Vitest.html")
-    const result = getLinks(html)
+  const baseUrl = "https://example.com/docs"
 
-    expect(result.length).toBeGreaterThan(0)
-  })
-
-  it("handles empty HTML", () => {
-    expect(getLinks("")).toEqual([])
-  })
-
-  it("handles HTML with no links", () => {
+  it("extracts basic links", () => {
     const html = `
-      <html>
-        <body>
-          <p>No links here</p>
-        </body>
-      </html>
+      <a href="/docs/other">Other</a>
+      <a href="https://example.com/docs/another">Another</a>
     `
-    expect(getLinks(html)).toEqual([])
-  })
-
-  it("trims whitespace from href values", () => {
-    const html = `
-      <a href=" https://example.com/page  ">Link</a>
-    `
-    expect(getLinks(html, "https://example.com")).toEqual([
-      "https://example.com/page",
+    expect(getLinks(html, baseUrl)).toEqual([
+      "https://example.com/docs/other",
+      "https://example.com/docs/another",
     ])
   })
 
-  it("ignores links from different origins", () => {
+  it("ignores links that should be excluded", () => {
     const html = `
-      <a href="https://example.com/page">Same origin</a>
-      <a href="https://different.com/page">Different origin</a>
+      <a href="javascript:void(0)">JS Link</a>
+      <a href="mailto:test@example.com">Email</a>
+      <a href="tel:123456789">Phone</a>
+      <a href="#section">Anchor</a>
+      <a href="">Empty</a>
+      <a href="  ">Whitespace</a>
     `
-    expect(getLinks(html, "https://example.com")).toEqual([
-      "https://example.com/page",
+    expect(getLinks(html, baseUrl)).toEqual([])
+  })
+
+  it("handles relative paths correctly", () => {
+    const html = `
+      <a href="../parent">Parent</a>
+      <a href="./child">Child</a>
+      <a href="sibling">Sibling</a>
+    `
+    expect(getLinks(html, baseUrl)).toEqual(["https://example.com/docs/child"])
+  })
+
+  it("filters out external domains", () => {
+    const html = `
+      <a href="https://external.com/page">External</a>
+      <a href="https://example.com/docs/internal">Internal</a>
+    `
+    expect(getLinks(html, baseUrl)).toEqual([
+      "https://example.com/docs/internal",
     ])
+  })
+
+  it("normalizes URLs", () => {
+    const html = `
+      <a href="http://example.com/docs/page">HTTP</a>
+      <a href="https://example.com/docs/page">HTTPS</a>
+    `
+
+    expect(getLinks(html, baseUrl)).toEqual(["https://example.com/docs/page"])
+  })
+
+  it("deduplicates identical links", () => {
+    const html = `
+      <a href="/docs/page">First</a>
+      <a href="/docs/page">Second</a>
+      <a href="https://example.com/docs/page">Third</a>
+    `
+    expect(getLinks(html, baseUrl)).toEqual(["https://example.com/docs/page"])
+  })
+
+  it("handles malformed HTML", () => {
+    const html = `
+      <a href="/docs/page>Unclosed quote</a>
+      <a href=/docs/page>No quotes</a>
+      <a href>No value</a>
+    `
+    // JSDOM should handle these cases
+    expect(getLinks(html, baseUrl)).toEqual([])
+  })
+
+  it("throws error for invalid base URL", () => {
+    expect(() => getLinks("<a href='/page'>Link</a>", "invalid-url")).toThrow(
+      "Invalid base URL",
+    )
   })
 })

@@ -26,6 +26,9 @@ importers:
       turndown:
         specifier: ^7.2.0
         version: 7.2.0
+      ufo:
+        specifier: ^1.5.4
+        version: 1.5.4
     devDependencies:
       '@echristian/eslint-config':
         specifier: ^0.0.16

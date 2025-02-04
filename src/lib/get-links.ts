@@ -1,10 +1,19 @@
 import { JSDOM } from "jsdom"
+import {
+  isRelative,
+  isSamePath,
+  joinRelativeURL,
+  parseURL,
+  withBase,
+  withHttps,
+} from "ufo"
 
 export function getLinks(html: string, baseUrl: string): Array<string> {
   const dom = new JSDOM(html)
   const document = dom.window.document
-  const base = new URL(baseUrl)
-  const basePath = base.pathname.replace(/\/$/, "") // Remove trailing slash
+  const base = parseURL(baseUrl)
+
+  if (!base.host) throw new Error("Invalid base URL")
 
   // Get all <a> elements with href attributes
   const linkElements = document.querySelectorAll("a[href]")
@@ -21,18 +30,18 @@ export function getLinks(html: string, baseUrl: string): Array<string> {
         !href.startsWith("tel:") &&
         !href.startsWith("#"),
     )
-    .map((href) => {
-      const url = new URL(href, baseUrl)
-      return url
-    })
-    .filter((url) => {
-      // Check if the URL matches both origin and starts with the base path
-      return (
-        url.origin === base.origin &&
-        (url.pathname.startsWith(basePath + "/") || url.pathname === basePath)
-      )
-    })
-    .map((url) => url.origin + url.pathname)
+    .map((url) => (isRelative(url) ? joinRelativeURL(base.pathname, url) : url))
+    // We already threw an error if base.host is undefined
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    .map((url) => withHttps(withBase(url, base.host!)))
+    .map((url) => parseURL(url))
+    .filter((url) => url.host === base.host)
+    .filter(
+      (url) =>
+        url.pathname.startsWith(base.pathname) ||
+        isSamePath(url.pathname, base.pathname),
+    )
+    .map((url) => withHttps(`${url.host}${url.pathname}`))
 
   return [...new Set(links)] // Remove duplicates
 }
