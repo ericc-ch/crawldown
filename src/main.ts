@@ -60,14 +60,10 @@ export async function crawl(
     })
 
     if (options.depth && options.depth > 0) {
-      // Extract origin from the current URL
-      const urlObject = new URL(options.url)
-      const origin = urlObject.origin
-
       consola.info(
         `Extracting links from ${options.url} (depth: ${options.depth})`,
       )
-      const links = getLinks(html, origin)
+      const links = getLinks(html, options.url)
       consola.debug(`Found ${links.length} links to process`)
 
       for (const link of links) {

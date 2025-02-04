@@ -1,8 +1,10 @@
 import { JSDOM } from "jsdom"
 
-export function getLinks(html: string, origin = "http://base"): Array<string> {
+export function getLinks(html: string, baseUrl: string): Array<string> {
   const dom = new JSDOM(html)
   const document = dom.window.document
+  const base = new URL(baseUrl)
+  const basePath = base.pathname.replace(/\/$/, "") // Remove trailing slash
 
   // Get all <a> elements with href attributes
   const linkElements = document.querySelectorAll("a[href]")
@@ -20,10 +22,16 @@ export function getLinks(html: string, origin = "http://base"): Array<string> {
         !href.startsWith("#"),
     )
     .map((href) => {
-      const url = new URL(href, origin)
+      const url = new URL(href, baseUrl)
       return url
     })
-    .filter((url) => url.origin === new URL(origin).origin)
+    .filter((url) => {
+      // Check if the URL matches both origin and starts with the base path
+      return (
+        url.origin === base.origin &&
+        (url.pathname.startsWith(basePath + "/") || url.pathname === basePath)
+      )
+    })
     .map((url) => url.origin + url.pathname)
 
   return [...new Set(links)] // Remove duplicates
