@@ -37,7 +37,7 @@ The package provides a command-line interface for easy conversion:
 # Basic usage
 npx crawldown https://example.com
 
-# Specify crawl depth (default: 1)
+# Specify crawl depth (default: 0)
 npx crawldown https://example.com -d 2
 
 # Custom output directory (default: output)
@@ -55,12 +55,12 @@ npx crawldown https://example.com --browser-path /path/to/chrome
 
 ### CLI Options
 
-- `url`: URL to scrape (required)
-- `-d, --depth`: Number of levels to crawl (default: "1")
-- `-v, --verbose`: Enable verbose logging
-- `--browser-path`: Path to browser executable
+- `url`: URL to scrape (required, positional argument)
+- `-d, --depth`: Number of levels to crawl (default: "0")
+- `-v, --verbose`: Enable verbose logging (default: false)
+- `--browser-path`: Path to browser executable (optional)
 - `-o, --output`: Output directory (default: "output")
-- `--single-file`: Output all results to a single markdown file
+- `--single-file`: Output all results to a single markdown file (default: false)
 
 ## Programmatic Usage
 

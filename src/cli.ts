@@ -8,7 +8,7 @@ import { crawl, defaultOptions } from "./main"
 
 const main = defineCommand({
   meta: {
-    name: "web2md",
+    name: "crawldown",
     description:
       "Crawl websites and convert their content into clean, readable Markdown using Mozilla's Readability and Turndown",
   },
