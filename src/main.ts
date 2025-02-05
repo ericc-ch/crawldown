@@ -2,6 +2,7 @@ import { Readability } from "@mozilla/readability"
 import consola from "consola"
 import defu from "defu"
 import { JSDOM } from "jsdom"
+import pLimit from "p-limit"
 import TurndownService from "turndown"
 import { withoutTrailingSlash } from "ufo"
 
@@ -9,11 +10,6 @@ import { setConfig } from "./lib/config"
 import { getLinks } from "./lib/get-links"
 import { scrapeHtml } from "./lib/scrape"
 import { CrawlOptions, CrawlResult } from "./types"
-
-interface QueueItem {
-  url: string
-  depth: number
-}
 
 export const defaultOptions = {
   depth: 0,
@@ -45,80 +41,83 @@ export async function crawl(
   consola.debug(processedOptions)
 
   const results: Array<CrawlResult> = []
-  const queue: Array<QueueItem> = [
-    { url: processedOptions.url, depth: processedOptions.depth },
-  ]
   const processedUrls = new Set<string>()
 
-  while (queue.length > 0) {
-    // We already checked if the queue is not empty
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const current = queue.shift()!
+  // Group URLs by depth in a Map
+  const urlsByDepth = new Map<number, Array<string>>()
+  urlsByDepth.set(processedOptions.depth, [processedOptions.url])
 
-    // Skip if already parsed
-    if (processedUrls.has(current.url)) {
-      consola.debug(`Skipping already parsed URL: ${current.url}`)
-      continue
-    }
+  // Create a concurrency limiter
+  const limit = pLimit(5) // Limit to 5 concurrent requests
 
-    consola.info(`Crawling ${current.url}, current depth: ${current.depth}`)
+  // Process each depth level
+  for (
+    let currentDepth = processedOptions.depth;
+    currentDepth >= 0;
+    currentDepth--
+  ) {
+    const urlsToProcess = urlsByDepth.get(currentDepth) ?? []
+    consola.info(
+      `Processing ${urlsToProcess.length} URLs at depth ${currentDepth}`,
+    )
 
-    consola.debug(`Scraping HTML from ${current.url}`)
-    const html = await scrapeHtml(current.url)
-    consola.debug(`Scraped HTML from ${current.url}`)
+    const currentDepthPromises = urlsToProcess.map((url) =>
+      limit(async () => {
+        if (processedUrls.has(url)) {
+          consola.debug(`Skipping already parsed URL: ${url}`)
+          return null
+        }
 
-    consola.debug(`Parsing article content for ${current.url}`)
-    const dom = new JSDOM(html)
-    const reader = new Readability(dom.window.document)
-    const article = reader.parse()
+        consola.info(`Crawling ${url}, current depth: ${currentDepth}`)
 
-    // Skip if readability can't find any content
-    if (!article?.content) {
-      consola.warn(`No article content found for ${current.url}`)
-      continue
-    }
+        try {
+          const html = await scrapeHtml(url)
+          const dom = new JSDOM(html)
+          const reader = new Readability(dom.window.document)
+          const article = reader.parse()
 
-    consola.debug(`Parsed article content for ${current.url}`)
+          if (!article?.content) {
+            consola.warn(`No article content found for ${url}`)
+            return null
+          }
 
-    consola.debug(`Converting to markdown for ${current.url}`)
-    const markdown = turndownService.turndown(article.content)
-    consola.debug(`Converted to markdown for ${current.url}`)
+          const markdown = turndownService.turndown(article.content)
+          processedUrls.add(url)
 
-    results.push({
-      url: current.url,
-      markdown,
-      title: article.title,
-    })
+          // If we have more depth to go, collect next level URLs
+          if (currentDepth > 0) {
+            const links = getLinks(html, url)
+            const newLinks = links
+              .filter((link) => !processedUrls.has(link))
+              .map((link) => withoutTrailingSlash(link))
 
-    processedUrls.add(current.url)
-    consola.debug(`Marked ${current.url} as processed`)
+            // Add links to next depth level
+            const nextDepth = currentDepth - 1
+            const existingUrls = urlsByDepth.get(nextDepth) ?? []
+            urlsByDepth.set(nextDepth, [...existingUrls, ...newLinks])
+          }
 
-    if (current.depth === 0) {
-      continue
-    }
+          return {
+            url,
+            markdown,
+            title: article.title,
+          }
+        } catch (error) {
+          consola.error(`Error processing ${url}:`, error)
+          return null
+        }
+      }),
+    )
 
-    // If we still have depth to go, add links to queue
-    consola.debug(`Extracting links from ${current.url}`)
+    // Process all URLs at current depth in parallel with concurrency limit
+    const currentDepthResults = await Promise.all(currentDepthPromises)
 
-    const links = getLinks(html, current.url)
-
-    consola.debug(`Found ${links.length} links`)
-    consola.debug(`Links: \n${links.join("\n")}`)
-
-    for (const link of links) {
-      if (processedUrls.has(link)) {
-        consola.debug(`Skipping already processed link: ${link}`)
-        continue
-      }
-
-      queue.push({
-        url: withoutTrailingSlash(link),
-        depth: current.depth - 1,
-      })
-      consola.debug(`Queued ${link} for crawling`)
-    }
+    // Add valid results to the final results array
+    results.push(
+      ...currentDepthResults.filter((r): r is CrawlResult => r !== null),
+    )
   }
 
-  consola.success(`Completed processing all queued URLs`)
+  consola.success(`Completed processing all URLs`)
   return results
 }
