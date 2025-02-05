@@ -1,4 +1,4 @@
-# @echristian/web2md
+# crawldown
 
 Crawl websites and convert their pages into clean, readable Markdown content using Mozilla's Readability and Turndown.
 
@@ -22,11 +22,11 @@ This package combines website crawling with Mozilla's Readability (the same tech
 ## Installation
 
 ```bash
-npm install @echristian/web2md
+npm install crawldown
 # or
-pnpm add @echristian/web2md
+pnpm add crawldown
 # or
-yarn add @echristian/web2md
+yarn add crawldown
 ```
 
 ## CLI Usage
@@ -35,22 +35,22 @@ The package provides a command-line interface for easy conversion:
 
 ```bash
 # Basic usage
-npx @echristian/web2md https://example.com
+npx crawldown https://example.com
 
 # Specify crawl depth (default: 1)
-npx @echristian/web2md https://example.com -d 2
+npx crawldown https://example.com -d 2
 
 # Custom output directory (default: output)
-npx @echristian/web2md https://example.com -o my-docs
+npx crawldown https://example.com -o my-docs
 
 # Output to a single file
-npx @echristian/web2md https://example.com --single-file
+npx crawldown https://example.com --single-file
 
 # Enable verbose logging
-npx @echristian/web2md https://example.com -v
+npx crawldown https://example.com -v
 
 # Specify custom browser path
-npx @echristian/web2md https://example.com --browser-path /path/to/chrome
+npx crawldown https://example.com --browser-path /path/to/chrome
 ```
 
 ### CLI Options
@@ -67,7 +67,7 @@ npx @echristian/web2md https://example.com --browser-path /path/to/chrome
 You can also use the package programmatically in your Node.js applications:
 
 ```typescript
-import { crawl } from '@echristian/web2md'
+import { crawl } from 'crawldown'
 
 async function main() {
   const results = await crawl({

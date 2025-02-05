@@ -1,5 +1,5 @@
 {
-  "name": "@echristian/web2md",
+  "name": "crawldown",
   "version": "0.0.9",
   "description": "Crawl websites and convert their content into clean, readable Markdown using Mozilla's Readability and Turndown",
   "keywords": [
@@ -12,11 +12,11 @@
     "html-to-markdown",
     "website-scraper"
   ],
-  "homepage": "https://github.com/ericc-ch/html2md#readme",
-  "bugs": "https://github.com/ericc-ch/html2md/issues",
+  "homepage": "https://github.com/ericc-ch/crawldown#readme",
+  "bugs": "https://github.com/ericc-ch/crawldown/issues", 
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ericc-ch/html2md.git"
+    "url": "git+https://github.com/ericc-ch/crawldown.git"
   },
   "author": "Erick Christian <erickchristian48@gmail.com>",
   "type": "module",
@@ -27,7 +27,7 @@
     }
   },
   "bin": {
-    "@echristian/web2md": "./dist/cli.js"
+    "crawldown": "./dist/cli.js"
   },
   "files": [
     "dist"
