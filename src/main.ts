@@ -12,10 +12,101 @@ import { getLinks } from "./lib/get-links"
 import { scrapeHtml } from "./lib/scrape"
 import { CrawlOptions, CrawlResult } from "./types"
 
+interface CrawlContext {
+  pagePool: PagePool
+  turndownService: TurndownService
+  processedUrls: Set<string>
+  urlsByDepth: Map<number, Array<string>>
+  limit: ReturnType<typeof pLimit>
+  results: Array<CrawlResult>
+}
+
 export const defaultOptions = {
   depth: 0,
   concurrency: 4,
 } satisfies Partial<CrawlOptions>
+
+async function processSingleUrl(
+  url: string,
+  currentDepth: number,
+  context: CrawlContext,
+): Promise<CrawlResult | null> {
+  if (context.processedUrls.has(url)) {
+    consola.debug(`Skipping already parsed URL: ${url}`)
+    return null
+  }
+
+  consola.info(`Crawling ${url}, current depth: ${currentDepth}`)
+
+  try {
+    const page = await context.pagePool.getAvailablePage()
+
+    try {
+      const html = await scrapeHtml(page, url)
+      const dom = new JSDOM(html)
+      const reader = new Readability(dom.window.document)
+      const article = reader.parse()
+
+      if (!article?.content) {
+        consola.warn(`No article content found for ${url}`)
+        return null
+      }
+
+      const markdown = context.turndownService.turndown(article.content)
+      context.processedUrls.add(url)
+
+      processNextDepthLinks(html, url, currentDepth, context)
+
+      return {
+        url,
+        markdown,
+        title: article.title,
+      }
+    } finally {
+      context.pagePool.releasePage(page)
+    }
+  } catch (error) {
+    consola.error(`Error processing ${url}:`, error)
+    return null
+  }
+}
+
+function processNextDepthLinks(
+  html: string,
+  url: string,
+  currentDepth: number,
+  context: CrawlContext,
+): void {
+  if (currentDepth > 0) {
+    const links = getLinks(html, url)
+    const newLinks = links
+      .filter((link) => !context.processedUrls.has(link))
+      .map((link) => withoutTrailingSlash(link))
+
+    const nextDepth = currentDepth - 1
+    const existingUrls = context.urlsByDepth.get(nextDepth) ?? []
+    context.urlsByDepth.set(nextDepth, [...existingUrls, ...newLinks])
+  }
+}
+
+async function processDepthLevel(
+  currentDepth: number,
+  context: CrawlContext,
+): Promise<void> {
+  const urlsToProcess = context.urlsByDepth.get(currentDepth) ?? []
+  consola.info(
+    `Processing ${urlsToProcess.length} URLs at depth ${currentDepth}`,
+  )
+
+  const currentDepthPromises = urlsToProcess.map((url) =>
+    context.limit(async () => processSingleUrl(url, currentDepth, context)),
+  )
+
+  const currentDepthResults = await Promise.all(currentDepthPromises)
+  context.results.push(
+    ...currentDepthResults.filter((r): r is CrawlResult => r !== null),
+  )
+}
 
 export async function crawl(
   options: CrawlOptions,
@@ -36,7 +127,6 @@ export async function crawl(
   }
 
   try {
-    // Create a pool of pages equal to the concurrency limit
     const pages = await Promise.all(
       Array(processedOptions.concurrency)
         .fill(null)
@@ -55,99 +145,31 @@ export async function crawl(
     consola.debug(`Options: `)
     consola.debug(processedOptions)
 
-    const results: Array<CrawlResult> = []
-    const processedUrls = new Set<string>()
+    const context: CrawlContext = {
+      pagePool,
+      turndownService,
+      processedUrls: new Set<string>(),
+      urlsByDepth: new Map<number, Array<string>>(),
+      limit: pLimit(processedOptions.concurrency),
+      results: [],
+    }
 
-    // Group URLs by depth in a Map
-    const urlsByDepth = new Map<number, Array<string>>()
-    urlsByDepth.set(processedOptions.depth, [processedOptions.url])
+    context.urlsByDepth.set(processedOptions.depth, [processedOptions.url])
 
-    // Create a concurrency limiter
-    const limit = pLimit(processedOptions.concurrency)
-
-    // Process each depth level
     for (
       let currentDepth = processedOptions.depth;
       currentDepth >= 0;
       currentDepth--
     ) {
-      const urlsToProcess = urlsByDepth.get(currentDepth) ?? []
-      consola.info(
-        `Processing ${urlsToProcess.length} URLs at depth ${currentDepth}`,
-      )
-
-      const currentDepthPromises = urlsToProcess.map((url) =>
-        limit(async () => {
-          if (processedUrls.has(url)) {
-            consola.debug(`Skipping already parsed URL: ${url}`)
-            return null
-          }
-
-          consola.info(`Crawling ${url}, current depth: ${currentDepth}`)
-
-          try {
-            const page = await pagePool.getAvailablePage()
-
-            try {
-              const html = await scrapeHtml(page, url)
-              const dom = new JSDOM(html)
-              const reader = new Readability(dom.window.document)
-              const article = reader.parse()
-
-              if (!article?.content) {
-                consola.warn(`No article content found for ${url}`)
-                return null
-              }
-
-              const markdown = turndownService.turndown(article.content)
-              processedUrls.add(url)
-
-              // If we have more depth to go, collect next level URLs
-              if (currentDepth > 0) {
-                const links = getLinks(html, url)
-                const newLinks = links
-                  .filter((link) => !processedUrls.has(link))
-                  .map((link) => withoutTrailingSlash(link))
-
-                // Add links to next depth level
-                const nextDepth = currentDepth - 1
-                const existingUrls = urlsByDepth.get(nextDepth) ?? []
-                urlsByDepth.set(nextDepth, [...existingUrls, ...newLinks])
-              }
-
-              return {
-                url,
-                markdown,
-                title: article.title,
-              }
-            } finally {
-              // Make sure to release the page
-              pagePool.releasePage(page)
-            }
-          } catch (error) {
-            consola.error(`Error processing ${url}:`, error)
-            return null
-          }
-        }),
-      )
-
-      // Process all URLs at current depth in parallel with concurrency limit
-      const currentDepthResults = await Promise.all(currentDepthPromises)
-
-      // Add valid results to the final results array
-      results.push(
-        ...currentDepthResults.filter((r): r is CrawlResult => r !== null),
-      )
+      await processDepthLevel(currentDepth, context)
     }
 
-    // Cleanup pages at the end
     await Promise.all(pages.map((page) => page.close()))
     await browserManager.cleanup()
 
     consola.success(`Completed processing all URLs`)
-    return results
+    return context.results
   } catch (error) {
-    // Make sure to cleanup on error
     await browserManager.cleanup()
     throw error
   }
