@@ -1,6 +1,6 @@
 {
   "name": "crawldown",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Crawl websites and convert their content into clean, readable Markdown using Mozilla's Readability and Turndown",
   "keywords": [
     "web-crawler",
