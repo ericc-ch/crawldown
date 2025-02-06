@@ -51,6 +51,9 @@ npx crawldown https://example.com -v
 
 # Specify custom browser path
 npx crawldown https://example.com --browser-path /path/to/chrome
+
+# Set number of concurrent pages (default: 4)
+npx crawldown https://example.com -c 8
 ```
 
 ### CLI Options
@@ -58,9 +61,10 @@ npx crawldown https://example.com --browser-path /path/to/chrome
 - `url`: URL to scrape (required, positional argument)
 - `-d, --depth`: Number of levels to crawl (default: "0")
 - `-v, --verbose`: Enable verbose logging (default: false)
-- `--browser-path`: Path to browser executable (optional)
+- `--browser-path`: Path to browser executable. Will use playwright default if not provided
 - `-o, --output`: Output directory (default: "output")
 - `--single-file`: Output all results to a single markdown file (default: false)
+- `-c, --concurrency`: Number of concurrent pages to use (default: "4")
 
 ## Programmatic Usage
 
@@ -71,8 +75,10 @@ import { crawl } from 'crawldown'
 
 async function main() {
   const results = await crawl({
-    url: 'https://example.com',
-    depth: 1, // Optional: how deep to crawl links
+    url: 'https://example.com',       // Required: URL to crawl
+    depth: 1,                         // Optional: how deep to crawl links (default: 0)
+    browserPath: '/path/to/chrome',   // Optional: custom browser executable path
+    concurrency: 4,                   // Optional: number of concurrent pages (default: 4)
   })
 
   // Each result contains:
