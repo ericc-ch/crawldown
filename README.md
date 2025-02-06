@@ -95,6 +95,13 @@ async function main() {
   }
 }
 ```
+## Credits
+
+This project was inspired by:
+
+- [repomix](https://github.com/yamadashy/repomix) - An awesome CLI tool to combine whole repositories into a single markdown file
+- [crawl4ai](https://github.com/unclecode/crawl4ai) - A feature-rich Python web crawler
+
 
 ## License
 
