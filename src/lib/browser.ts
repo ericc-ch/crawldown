@@ -2,46 +2,53 @@ import { Browser, BrowserContext, Page, chromium } from "playwright"
 
 import { getConfig } from "./config"
 
-let browser: Browser | null = null
-let context: BrowserContext | null = null
+export class BrowserManager {
+  private static instance: BrowserManager | null = null
+  private browser: Browser | null = null
+  private context: BrowserContext | null = null
 
-async function getBrowser(): Promise<Browser> {
-  if (browser) {
-    return browser
+  // Make constructor private since this is a singleton
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  private constructor() {}
+
+  // Static method to get instance
+  public static getInstance(): BrowserManager {
+    if (!BrowserManager.instance) {
+      BrowserManager.instance = new BrowserManager()
+    }
+    return BrowserManager.instance
   }
 
-  const config = getConfig()
+  async getBrowserContext(): Promise<BrowserContext> {
+    if (this.context) {
+      return this.context
+    }
 
-  browser = await chromium.launch({
-    executablePath: config.browserPath ?? undefined,
-  })
+    if (!this.browser) {
+      const config = getConfig()
+      this.browser = await chromium.launch({
+        executablePath: config.browserPath ?? undefined,
+      })
+    }
 
-  return browser
-}
-
-async function getBrowserContext(): Promise<BrowserContext> {
-  if (context) {
-    return context
+    this.context = await this.browser.newContext()
+    return this.context
   }
 
-  const browser = await getBrowser()
-  context = await browser.newContext()
-  return context
-}
-
-export async function createPage(): Promise<Page> {
-  const context = await getBrowserContext()
-  return await context.newPage()
-}
-
-export async function cleanup(): Promise<void> {
-  if (context) {
-    await context.close()
-    context = null
+  async createPage(): Promise<Page> {
+    const context = await this.getBrowserContext()
+    return await context.newPage()
   }
 
-  if (browser) {
-    await browser.close()
-    browser = null
+  async cleanup(): Promise<void> {
+    if (this.context) {
+      await this.context.close()
+      this.context = null
+    }
+
+    if (this.browser) {
+      await this.browser.close()
+      this.browser = null
+    }
   }
 }

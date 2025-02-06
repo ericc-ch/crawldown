@@ -1,19 +1,14 @@
-import { createPage } from "./browser"
+import type { Page } from "playwright"
 
-export async function scrapeHtml(url: string): Promise<string> {
-  const page = await createPage()
+export async function scrapeHtml(page: Page, url: string): Promise<string> {
   try {
     await page.goto(url, {
       timeout: 60_000,
     })
 
-    const html = await page.content()
-
-    return html
+    return await page.content()
   } catch (error) {
     console.error(`Error scraping ${url}:`, error)
     throw error
-  } finally {
-    await page.close() // Just close the page, not the browser
   }
 }
