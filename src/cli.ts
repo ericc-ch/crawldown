@@ -3,7 +3,6 @@ import consola from "consola"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 
-import { cleanup } from "./lib/browser"
 import { crawl, defaultOptions } from "./main"
 
 const main = defineCommand({
@@ -107,9 +106,6 @@ const main = defineCommand({
         consola.error(`Failed to write file for ${result.url}:`, error)
       }
     }
-  },
-  cleanup: async () => {
-    await cleanup()
   },
 })
 
