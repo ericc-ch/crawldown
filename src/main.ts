@@ -6,7 +6,7 @@ import pLimit from "p-limit"
 import TurndownService from "turndown"
 import { withoutTrailingSlash } from "ufo"
 
-import { BrowserManager } from "./lib/browser"
+import { BrowserManager, PagePool } from "./lib/browser"
 import { setConfig } from "./lib/config"
 import { getLinks } from "./lib/get-links"
 import { scrapeHtml } from "./lib/scrape"
@@ -39,7 +39,7 @@ export async function crawl(
         .fill(null)
         .map(() => browserManager.createPage()),
     )
-    let pageIndex = 0
+    const pagePool = new PagePool(pages)
 
     const turndownService = new TurndownService({
       headingStyle: "atx",
@@ -83,40 +83,43 @@ export async function crawl(
           consola.info(`Crawling ${url}, current depth: ${currentDepth}`)
 
           try {
-            // Round-robin page selection
-            const page = pages[pageIndex]
-            pageIndex = (pageIndex + 1) % pages.length
+            const page = await pagePool.getAvailablePage()
 
-            const html = await scrapeHtml(page, url)
-            const dom = new JSDOM(html)
-            const reader = new Readability(dom.window.document)
-            const article = reader.parse()
+            try {
+              const html = await scrapeHtml(page, url)
+              const dom = new JSDOM(html)
+              const reader = new Readability(dom.window.document)
+              const article = reader.parse()
 
-            if (!article?.content) {
-              consola.warn(`No article content found for ${url}`)
-              return null
-            }
+              if (!article?.content) {
+                consola.warn(`No article content found for ${url}`)
+                return null
+              }
 
-            const markdown = turndownService.turndown(article.content)
-            processedUrls.add(url)
+              const markdown = turndownService.turndown(article.content)
+              processedUrls.add(url)
 
-            // If we have more depth to go, collect next level URLs
-            if (currentDepth > 0) {
-              const links = getLinks(html, url)
-              const newLinks = links
-                .filter((link) => !processedUrls.has(link))
-                .map((link) => withoutTrailingSlash(link))
+              // If we have more depth to go, collect next level URLs
+              if (currentDepth > 0) {
+                const links = getLinks(html, url)
+                const newLinks = links
+                  .filter((link) => !processedUrls.has(link))
+                  .map((link) => withoutTrailingSlash(link))
 
-              // Add links to next depth level
-              const nextDepth = currentDepth - 1
-              const existingUrls = urlsByDepth.get(nextDepth) ?? []
-              urlsByDepth.set(nextDepth, [...existingUrls, ...newLinks])
-            }
+                // Add links to next depth level
+                const nextDepth = currentDepth - 1
+                const existingUrls = urlsByDepth.get(nextDepth) ?? []
+                urlsByDepth.set(nextDepth, [...existingUrls, ...newLinks])
+              }
 
-            return {
-              url,
-              markdown,
-              title: article.title,
+              return {
+                url,
+                markdown,
+                title: article.title,
+              }
+            } finally {
+              // Make sure to release the page
+              pagePool.releasePage(page)
             }
           } catch (error) {
             consola.error(`Error processing ${url}:`, error)
