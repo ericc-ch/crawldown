@@ -1,3 +1,5 @@
+#!/bin/env node
+
 import { defineCommand, runMain } from "citty"
 import consola from "consola"
 import { writeFile, mkdir } from "fs/promises"
