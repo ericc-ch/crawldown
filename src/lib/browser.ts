@@ -1,8 +1,9 @@
-import { Browser, Page, chromium } from "playwright"
+import { Browser, BrowserContext, Page, chromium } from "playwright"
 
 import { getConfig } from "./config"
 
 let browser: Browser | null = null
+let context: BrowserContext | null = null
 
 async function getBrowser(): Promise<Browser> {
   if (browser) {
@@ -18,15 +19,27 @@ async function getBrowser(): Promise<Browser> {
   return browser
 }
 
-export async function createPage(): Promise<Page> {
-  const browser = await getBrowser()
-  const context = await browser.newContext()
-  const page = await context.newPage()
+async function getBrowserContext(): Promise<BrowserContext> {
+  if (context) {
+    return context
+  }
 
-  return page
+  const browser = await getBrowser()
+  context = await browser.newContext()
+  return context
+}
+
+export async function createPage(): Promise<Page> {
+  const context = await getBrowserContext()
+  return await context.newPage()
 }
 
 export async function cleanup(): Promise<void> {
+  if (context) {
+    await context.close()
+    context = null
+  }
+
   if (browser) {
     await browser.close()
     browser = null
