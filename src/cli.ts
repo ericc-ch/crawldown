@@ -51,6 +51,13 @@ const main = defineCommand({
       description: "Output all results to a single markdown file",
       required: false,
     },
+    concurrency: {
+      alias: "c",
+      type: "string",
+      default: "4",
+      description: "Number of concurrent pages to use",
+      required: false,
+    },
   },
   run: async ({ args }) => {
     const {
@@ -60,14 +67,16 @@ const main = defineCommand({
       "browser-path": browserPath,
       output,
       "single-file": singleFile,
+      concurrency: concurrencyString,
     } = args
     const depth = parseInt(depthString, 10)
+    const concurrency = parseInt(concurrencyString, 10)
 
     if (verbose) {
       consola.level = 4
     }
 
-    const results = await crawl({ url, depth, browserPath })
+    const results = await crawl({ url, depth, browserPath, concurrency })
 
     // Create the base output directory
     await mkdir(output, { recursive: true })

@@ -14,6 +14,7 @@ import { CrawlOptions, CrawlResult } from "./types"
 
 export const defaultOptions = {
   depth: 0,
+  concurrency: 4,
 } satisfies Partial<CrawlOptions>
 
 export async function crawl(
@@ -37,7 +38,7 @@ export async function crawl(
   try {
     // Create a pool of pages equal to the concurrency limit
     const pages = await Promise.all(
-      Array(5)
+      Array(processedOptions.concurrency)
         .fill(null)
         .map(() => browserManager.createPage()),
     )
@@ -62,7 +63,7 @@ export async function crawl(
     urlsByDepth.set(processedOptions.depth, [processedOptions.url])
 
     // Create a concurrency limiter
-    const limit = pLimit(5) // Limit to 5 concurrent requests
+    const limit = pLimit(processedOptions.concurrency)
 
     // Process each depth level
     for (
