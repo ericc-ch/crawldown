@@ -78,15 +78,15 @@ const main = defineCommand({
 
     const results = await crawl({ url, depth, browserPath, concurrency })
 
-    // Create the base output directory
-    await mkdir(output, { recursive: true })
-
     if (singleFile) {
-      const outputFile = join(output, "contents.md")
+      // If output ends with .md, use it directly, otherwise append .md
+      const outputFile = output.endsWith(".md") ? output : `${output}.md`
       await writeToSingleFile(outputFile, results)
-
       return
     }
+
+    // Create the base output directory
+    await mkdir(output, { recursive: true })
 
     // Process each result and write to files
     for (const result of results) {

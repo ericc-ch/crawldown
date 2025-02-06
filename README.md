@@ -40,11 +40,14 @@ npx crawldown https://example.com
 # Specify crawl depth (default: 0)
 npx crawldown https://example.com -d 2
 
-# Custom output directory (default: output)
+# Custom output directory (when not using --single-file)
 npx crawldown https://example.com -o my-docs
 
-# Output to a single file
-npx crawldown https://example.com --single-file
+# Output to a single file (will create result.md)
+npx crawldown https://example.com --single-file -o result
+
+# Output to a single file with explicit .md extension
+npx crawldown https://example.com --single-file -o result.md
 
 # Enable verbose logging
 npx crawldown https://example.com -v
