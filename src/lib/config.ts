@@ -2,17 +2,31 @@ interface Config {
   browserPath: string | null
 }
 
-let config: Config = {
-  browserPath: null,
-}
+export class ConfigManager {
+  private static instance: ConfigManager | null = null
+  private config: Config = {
+    browserPath: null,
+  }
 
-export function getConfig(): Config {
-  return config
-}
+  // Private constructor to prevent direct construction calls with `new`
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  private constructor() {}
 
-export function setConfig(newConfig: Partial<Config>): void {
-  config = {
-    ...config,
-    ...newConfig,
+  public static getInstance(): ConfigManager {
+    if (!ConfigManager.instance) {
+      ConfigManager.instance = new ConfigManager()
+    }
+    return ConfigManager.instance
+  }
+
+  getConfig(): Config {
+    return this.config
+  }
+
+  setConfig(newConfig: Partial<Config>): void {
+    this.config = {
+      ...this.config,
+      ...newConfig,
+    }
   }
 }

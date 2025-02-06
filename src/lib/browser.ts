@@ -1,6 +1,6 @@
 import { Browser, BrowserContext, Page, chromium } from "playwright"
 
-import { getConfig } from "./config"
+import { ConfigManager } from "./config"
 
 export class PagePool {
   private pageIndex = 0
@@ -57,7 +57,7 @@ export class BrowserManager {
     }
 
     if (!this.browser) {
-      const config = getConfig()
+      const config = ConfigManager.getInstance().getConfig()
       this.browser = await chromium.launch({
         executablePath: config.browserPath ?? undefined,
       })

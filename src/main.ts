@@ -7,7 +7,7 @@ import TurndownService from "turndown"
 import { withoutTrailingSlash } from "ufo"
 
 import { BrowserManager, PagePool } from "./lib/browser"
-import { setConfig } from "./lib/config"
+import { ConfigManager } from "./lib/config"
 import { getLinks } from "./lib/get-links"
 import { scrapeHtml } from "./lib/scrape"
 import { CrawlOptions, CrawlResult } from "./types"
@@ -29,7 +29,9 @@ export async function crawl(
   processedOptions.url = withoutTrailingSlash(processedOptions.url)
 
   if (processedOptions.browserPath) {
-    setConfig({ browserPath: processedOptions.browserPath })
+    ConfigManager.getInstance().setConfig({
+      browserPath: processedOptions.browserPath,
+    })
   }
 
   try {
