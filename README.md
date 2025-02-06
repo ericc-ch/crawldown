@@ -65,8 +65,8 @@ npx crawldown https://example.com -c 8
 - `-d, --depth`: Number of levels to crawl (default: "0")
 - `-v, --verbose`: Enable verbose logging (default: false)
 - `--browser-path`: Path to browser executable. Will use playwright default if not provided
-- `-o, --output`: Output directory (default: "output")
-- `--single-file`: Output all results to a single markdown file (default: false)
+- `-o, --output`: When used with --single-file, specifies the output filename. Otherwise specifies the output directory (default: "output")
+- `--single-file`: Output all results to a single markdown file instead of a directory structure (default: false)
 - `-c, --concurrency`: Number of concurrent pages to use (default: "4")
 
 ## Programmatic Usage
