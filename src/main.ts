@@ -10,27 +10,26 @@ import { BrowserManager, PagePool } from "./lib/browser"
 import { ConfigManager } from "./lib/config"
 import { getLinks } from "./lib/get-links"
 import { scrapeHtml } from "./lib/scrape"
-import { CrawlOptions, CrawlResult } from "./types"
-
-interface CrawlContext {
-  pagePool: PagePool
-  turndownService: TurndownService
-  processedUrls: Set<string>
-  urlsByDepth: Map<number, Array<string>>
-  limit: ReturnType<typeof pLimit>
-  results: Array<CrawlResult>
-}
+import {
+  CrawlOptions,
+  CrawlResult,
+  ProcessSingleUrlParams,
+  ProcessNextDepthLinksParams,
+  ProcessDepthLevelParams,
+  CrawlContext,
+} from "./types"
 
 export const defaultOptions = {
   depth: 0,
   concurrency: 4,
 } satisfies Partial<CrawlOptions>
 
-async function processSingleUrl(
-  url: string,
-  currentDepth: number,
-  context: CrawlContext,
-): Promise<CrawlResult | null> {
+async function processSingleUrl({
+  url,
+  currentDepth,
+  context,
+  scopeUrl,
+}: ProcessSingleUrlParams): Promise<CrawlResult | null> {
   if (context.processedUrls.has(url)) {
     consola.debug(`Skipping already parsed URL: ${url}`)
     return null
@@ -55,7 +54,7 @@ async function processSingleUrl(
       const markdown = context.turndownService.turndown(article.content)
       context.processedUrls.add(url)
 
-      processNextDepthLinks(html, url, currentDepth, context)
+      processNextDepthLinks({ html, url, currentDepth, context, scopeUrl })
 
       return {
         url,
@@ -71,14 +70,15 @@ async function processSingleUrl(
   }
 }
 
-function processNextDepthLinks(
-  html: string,
-  url: string,
-  currentDepth: number,
-  context: CrawlContext,
-): void {
+function processNextDepthLinks({
+  html,
+
+  currentDepth,
+  context,
+  scopeUrl,
+}: ProcessNextDepthLinksParams): void {
   if (currentDepth > 0) {
-    const links = getLinks(html, url)
+    const links = getLinks(html, scopeUrl)
     const newLinks = links
       .filter((link) => !context.processedUrls.has(link))
       .map((link) => withoutTrailingSlash(link))
@@ -89,17 +89,20 @@ function processNextDepthLinks(
   }
 }
 
-async function processDepthLevel(
-  currentDepth: number,
-  context: CrawlContext,
-): Promise<void> {
+async function processDepthLevel({
+  currentDepth,
+  context,
+  scopeUrl,
+}: ProcessDepthLevelParams): Promise<void> {
   const urlsToProcess = context.urlsByDepth.get(currentDepth) ?? []
   consola.info(
     `Processing ${urlsToProcess.length} URLs at depth ${currentDepth}`,
   )
 
   const currentDepthPromises = urlsToProcess.map((url) =>
-    context.limit(async () => processSingleUrl(url, currentDepth, context)),
+    context.limit(async () =>
+      processSingleUrl({ url, currentDepth, context, scopeUrl }),
+    ),
   )
 
   const currentDepthResults = await Promise.all(currentDepthPromises)
@@ -161,7 +164,11 @@ export async function crawl(
       currentDepth >= 0;
       currentDepth--
     ) {
-      await processDepthLevel(currentDepth, context)
+      await processDepthLevel({
+        currentDepth,
+        context,
+        scopeUrl: options.scopeUrl ?? processedOptions.url,
+      })
     }
 
     await Promise.all(pages.map((page) => page.close()))

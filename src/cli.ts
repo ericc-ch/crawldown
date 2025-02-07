@@ -60,6 +60,11 @@ const main = defineCommand({
       description: "Number of concurrent pages to use",
       required: false,
     },
+    "scope-url": {
+      type: "string",
+      description: "URL that defines the crawling scope. Links outside this scope will be ignored",
+      required: false,
+    },
   },
   run: async ({ args }) => {
     const {
@@ -70,6 +75,7 @@ const main = defineCommand({
       output,
       "single-file": singleFile,
       concurrency: concurrencyString,
+      "scope-url": scopeUrl,
     } = args
     const depth = parseInt(depthString, 10)
     const concurrency = parseInt(concurrencyString, 10)
@@ -78,7 +84,7 @@ const main = defineCommand({
       consola.level = 4
     }
 
-    const results = await crawl({ url, depth, browserPath, concurrency })
+    const results = await crawl({ url, depth, browserPath, concurrency, scopeUrl })
 
     if (singleFile) {
       // If output ends with .md, use it directly, otherwise append .md
