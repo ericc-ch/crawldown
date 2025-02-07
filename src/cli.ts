@@ -5,6 +5,7 @@ import consola from "consola"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 
+import { BrowserManager } from "./lib/browser"
 import { crawl, defaultOptions } from "./main"
 
 const main = defineCommand({
@@ -172,4 +173,8 @@ ${result.markdown}
   consola.success(`Written all content to: ${outputPath}`)
 }
 
-void runMain(main)
+void runMain(main).finally(async () => {
+  const browserManager = BrowserManager.getInstance()
+  await browserManager.cleanup()
+  process.exit(0)
+})
