@@ -1,5 +1,6 @@
 import { JSDOM } from "jsdom"
 import {
+  hasProtocol,
   isRelative,
   isSamePath,
   joinRelativeURL,
@@ -30,7 +31,15 @@ export function getLinks(html: string, scopeUrl: string): Array<string> {
         !href.startsWith("tel:") &&
         !href.startsWith("#"),
     )
-    .map((url) => (isRelative(url) ? joinRelativeURL(base.pathname, url) : url))
+    .map((url) =>
+      isRelative(url) || !hasProtocol(url) ?
+        joinRelativeURL(base.pathname, url)
+      : url,
+    )
+    .map((url) => {
+      console.log(url)
+      return url
+    })
     // We already threw an error if base.host is undefined
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     .map((url) => withHttps(withBase(url, base.host!)))
