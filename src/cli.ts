@@ -62,7 +62,8 @@ const main = defineCommand({
     },
     "scope-url": {
       type: "string",
-      description: "URL that defines the crawling scope. Links outside this scope will be ignored",
+      description:
+        "URL that defines the crawling scope. Links outside this scope will be ignored",
       required: false,
     },
   },
@@ -84,7 +85,13 @@ const main = defineCommand({
       consola.level = 4
     }
 
-    const results = await crawl({ url, depth, browserPath, concurrency, scopeUrl })
+    const results = await crawl({
+      url,
+      depth,
+      browserPath,
+      concurrency,
+      scopeUrl,
+    })
 
     if (singleFile) {
       // If output ends with .md, use it directly, otherwise append .md
