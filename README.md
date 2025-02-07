@@ -3,6 +3,7 @@
 Crawl websites and convert their pages into clean, readable Markdown content using Mozilla's Readability and Turndown.
 
 This package combines website crawling with Mozilla's Readability (the same technology behind Firefox's Reader View) and Turndown to:
+
 1. Crawl websites and follow links up to a specified depth
 2. Extract the main content from each page, removing clutter and ads
 3. Convert the cleaned content into well-formatted Markdown
@@ -57,6 +58,9 @@ npx crawldown https://example.com --browser-path /path/to/chrome
 
 # Set number of concurrent pages (default: 4)
 npx crawldown https://example.com -c 8
+
+# Define a specific scope URL for crawling
+npx crawldown https://example.com --scope-url https://example.com/docs
 ```
 
 ### CLI Options
@@ -68,40 +72,42 @@ npx crawldown https://example.com -c 8
 - `-o, --output`: When used with --single-file, specifies the output filename. Otherwise specifies the output directory (default: "output")
 - `--single-file`: Output all results to a single markdown file instead of a directory structure (default: false)
 - `-c, --concurrency`: Number of concurrent pages to use (default: "4")
+- `--scope-url`: URL that defines the crawling scope. Links outside this scope will be ignored
 
 ## Programmatic Usage
 
 You can also use the package programmatically in your Node.js applications:
 
 ```typescript
-import { crawl } from 'crawldown'
+import { crawl } from "crawldown";
 
 async function main() {
   const results = await crawl({
-    url: 'https://example.com',       // Required: URL to crawl
-    depth: 1,                         // Optional: how deep to crawl links (default: 0)
-    browserPath: '/path/to/chrome',   // Optional: custom browser executable path
-    concurrency: 4,                   // Optional: number of concurrent pages (default: 4)
-  })
+    url: "https://example.com", // Required: URL to crawl
+    depth: 1, // Optional: how deep to crawl links (default: 0)
+    browserPath: "/path/to/chrome", // Optional: custom browser executable path
+    concurrency: 4, // Optional: number of concurrent pages (default: 4)
+    scopeUrl: "https://example.com/docs", // Optional: URL that defines crawling scope
+  });
 
   // Each result contains:
   // - url: string
   // - title: string
   // - markdown: string
   for (const result of results) {
-    console.log(`Title: ${result.title}`)
-    console.log(`URL: ${result.url}`)
-    console.log(`Content:\n${result.markdown}`)
+    console.log(`Title: ${result.title}`);
+    console.log(`URL: ${result.url}`);
+    console.log(`Content:\n${result.markdown}`);
   }
 }
 ```
+
 ## Credits
 
 This project was inspired by:
 
 - [repomix](https://github.com/yamadashy/repomix) - An awesome CLI tool to combine whole repositories into a single markdown file
 - [crawl4ai](https://github.com/unclecode/crawl4ai) - A feature-rich Python web crawler
-
 
 ## License
 
