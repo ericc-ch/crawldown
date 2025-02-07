@@ -13,7 +13,7 @@
     "website-scraper"
   ],
   "homepage": "https://github.com/ericc-ch/crawldown#readme",
-  "bugs": "https://github.com/ericc-ch/crawldown/issues", 
+  "bugs": "https://github.com/ericc-ch/crawldown/issues",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ericc-ch/crawldown.git"
@@ -64,17 +64,16 @@
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.13.1",
     "@types/turndown": "^5.0.5",
-    "bumpp": "^10.0.1",
+    "bumpp": "^10.0.2",
     "eslint": "^9.19.0",
     "lint-staged": "^15.4.3",
     "simple-git-hooks": "^2.11.1",
     "tsup": "^8.3.6",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
-    "vite": "^6.0.11",
     "vitest": "^3.0.5"
   },
-  "packageManager": "pnpm@10.2.0",
+  "packageManager": "pnpm@10.2.1",
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
