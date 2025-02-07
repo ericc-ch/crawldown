@@ -10,6 +10,7 @@ export interface CrawlContext {
   urlsByDepth: Map<number, Array<string>>
   limit: ReturnType<typeof pLimit>
   results: Array<CrawlResult>
+  scopeUrl: string
 }
 
 export interface CrawlOptions {
@@ -30,7 +31,6 @@ export interface ProcessSingleUrlParams {
   url: string
   currentDepth: number
   context: CrawlContext
-  scopeUrl: string
 }
 
 export interface ProcessNextDepthLinksParams {
@@ -38,11 +38,9 @@ export interface ProcessNextDepthLinksParams {
   url: string
   currentDepth: number
   context: CrawlContext
-  scopeUrl: string
 }
 
 export interface ProcessDepthLevelParams {
   currentDepth: number
   context: CrawlContext
-  scopeUrl: string
 }

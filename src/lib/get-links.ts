@@ -8,10 +8,10 @@ import {
   withHttps,
 } from "ufo"
 
-export function getLinks(html: string, baseUrl: string): Array<string> {
+export function getLinks(html: string, scopeUrl: string): Array<string> {
   const dom = new JSDOM(html)
   const document = dom.window.document
-  const base = parseURL(baseUrl)
+  const base = parseURL(scopeUrl)
 
   if (!base.host) throw new Error("Invalid base URL")
 

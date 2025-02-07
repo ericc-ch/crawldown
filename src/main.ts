@@ -28,7 +28,6 @@ async function processSingleUrl({
   url,
   currentDepth,
   context,
-  scopeUrl,
 }: ProcessSingleUrlParams): Promise<CrawlResult | null> {
   if (context.processedUrls.has(url)) {
     consola.debug(`Skipping already parsed URL: ${url}`)
@@ -54,7 +53,7 @@ async function processSingleUrl({
       const markdown = context.turndownService.turndown(article.content)
       context.processedUrls.add(url)
 
-      processNextDepthLinks({ html, url, currentDepth, context, scopeUrl })
+      processNextDepthLinks({ html, url, currentDepth, context })
 
       return {
         url,
@@ -72,13 +71,11 @@ async function processSingleUrl({
 
 function processNextDepthLinks({
   html,
-
   currentDepth,
   context,
-  scopeUrl,
 }: ProcessNextDepthLinksParams): void {
   if (currentDepth > 0) {
-    const links = getLinks(html, scopeUrl)
+    const links = getLinks(html, context.scopeUrl)
     const newLinks = links
       .filter((link) => !context.processedUrls.has(link))
       .map((link) => withoutTrailingSlash(link))
@@ -92,7 +89,6 @@ function processNextDepthLinks({
 async function processDepthLevel({
   currentDepth,
   context,
-  scopeUrl,
 }: ProcessDepthLevelParams): Promise<void> {
   const urlsToProcess = context.urlsByDepth.get(currentDepth) ?? []
   consola.info(
@@ -100,9 +96,7 @@ async function processDepthLevel({
   )
 
   const currentDepthPromises = urlsToProcess.map((url) =>
-    context.limit(async () =>
-      processSingleUrl({ url, currentDepth, context, scopeUrl }),
-    ),
+    context.limit(async () => processSingleUrl({ url, currentDepth, context })),
   )
 
   const currentDepthResults = await Promise.all(currentDepthPromises)
@@ -155,6 +149,7 @@ export async function crawl(
       urlsByDepth: new Map<number, Array<string>>(),
       limit: pLimit(processedOptions.concurrency),
       results: [],
+      scopeUrl: options.scopeUrl ?? processedOptions.url,
     }
 
     context.urlsByDepth.set(processedOptions.depth, [processedOptions.url])
@@ -167,7 +162,6 @@ export async function crawl(
       await processDepthLevel({
         currentDepth,
         context,
-        scopeUrl: options.scopeUrl ?? processedOptions.url,
       })
     }
 
