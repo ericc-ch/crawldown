@@ -1,12 +1,14 @@
 import type { Page } from "playwright"
 
+export const DEFAULT_TIMEOUT = 10_000
+export const DEFAULT_FORCE = false
+
 export async function scrapeHtml(
   page: Page,
   url: string,
-  force = false,
+  force = DEFAULT_FORCE,
+  timeout = DEFAULT_TIMEOUT,
 ): Promise<string> {
-  const timeoutMs = 60_000
-
   try {
     if (force) {
       const safetyMarginMs = 1000 // Get content 1 second before timeout
@@ -21,13 +23,13 @@ export async function scrapeHtml(
           } catch (err) {
             reject(err as Error)
           }
-        }, timeoutMs - safetyMarginMs)
+        }, timeout - safetyMarginMs)
       })
 
       // Try normal navigation
       const navigationPromise = page
         .goto(url, {
-          timeout: timeoutMs,
+          timeout,
           waitUntil: "load",
         })
         .then(() => page.content())
@@ -36,7 +38,7 @@ export async function scrapeHtml(
       return await Promise.race([navigationPromise, timeoutPromise])
     } else {
       await page.goto(url, {
-        timeout: timeoutMs,
+        timeout,
         waitUntil: "load",
       })
       return await page.content()

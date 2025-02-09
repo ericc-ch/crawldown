@@ -12,6 +12,7 @@ export interface CrawlContext {
   results: Array<CrawlResult>
   scopeUrl: string
   force: boolean
+  timeout: number
 }
 
 export interface CrawlOptions {
@@ -22,6 +23,7 @@ export interface CrawlOptions {
   scopeUrl?: string
   noHeadless?: boolean
   force?: boolean
+  timeout?: number
 }
 
 export interface CrawlResult {

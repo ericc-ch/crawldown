@@ -7,9 +7,9 @@ import TurndownService from "turndown"
 import { withoutTrailingSlash } from "ufo"
 
 import { BrowserManager, PagePool } from "./lib/browser"
-import { ConfigManager } from "./lib/config"
+import { ConfigManager, DEFAULT_HEADLESS } from "./lib/config"
 import { getLinks } from "./lib/get-links"
-import { scrapeHtml } from "./lib/scrape"
+import { DEFAULT_FORCE, DEFAULT_TIMEOUT, scrapeHtml } from "./lib/scrape"
 import {
   CrawlOptions,
   CrawlResult,
@@ -19,12 +19,15 @@ import {
   CrawlContext,
 } from "./types"
 
-export const defaultOptions = {
+type RequiredOptions = "url" | "scopeUrl" | "browserPath"
+
+export const DEFAULT_OPTIONS = {
   depth: 0,
   concurrency: 4,
-  noHeadless: false,
-  force: false,
-} satisfies Partial<CrawlOptions>
+  noHeadless: !DEFAULT_HEADLESS,
+  force: DEFAULT_FORCE,
+  timeout: DEFAULT_TIMEOUT,
+} satisfies Required<Omit<CrawlOptions, RequiredOptions>>
 
 async function processSingleUrl({
   url,
@@ -42,7 +45,7 @@ async function processSingleUrl({
     const page = await context.pagePool.getAvailablePage()
 
     try {
-      const html = await scrapeHtml(page, url, context.force)
+      const html = await scrapeHtml(page, url, context.force, context.timeout)
       const dom = new JSDOM(html)
       const reader = new Readability(dom.window.document)
       const article = reader.parse()
@@ -114,7 +117,7 @@ export async function crawl(
 
   const processedOptions = defu(
     options,
-    defaultOptions,
+    DEFAULT_OPTIONS,
   ) as Required<CrawlOptions>
 
   processedOptions.url = withoutTrailingSlash(processedOptions.url)
@@ -154,6 +157,7 @@ export async function crawl(
       results: [],
       scopeUrl: options.scopeUrl ?? processedOptions.url,
       force: processedOptions.force,
+      timeout: processedOptions.timeout,
     }
 
     context.urlsByDepth.set(processedOptions.depth, [processedOptions.url])

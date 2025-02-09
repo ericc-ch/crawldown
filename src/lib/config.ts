@@ -1,3 +1,5 @@
+export const DEFAULT_HEADLESS = true
+
 interface Config {
   browserPath: string | null
   headless: boolean
@@ -7,7 +9,7 @@ export class ConfigManager {
   private static instance: ConfigManager | null = null
   private config: Config = {
     browserPath: null,
-    headless: true,
+    headless: DEFAULT_HEADLESS,
   }
 
   // Private constructor to prevent direct construction calls with `new`

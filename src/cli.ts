@@ -6,7 +6,7 @@ import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 
 import { BrowserManager } from "./lib/browser"
-import { crawl, defaultOptions } from "./main"
+import { crawl, DEFAULT_OPTIONS } from "./main"
 
 const main = defineCommand({
   meta: {
@@ -24,7 +24,7 @@ const main = defineCommand({
     depth: {
       alias: "d",
       type: "string",
-      default: defaultOptions.depth.toString(),
+      default: DEFAULT_OPTIONS.depth.toString(),
       description: "Number of levels to crawl",
       required: false,
     },
@@ -57,7 +57,7 @@ const main = defineCommand({
     concurrency: {
       alias: "c",
       type: "string",
-      default: "4",
+      default: DEFAULT_OPTIONS.concurrency.toString(),
       description: "Number of concurrent pages to use",
       required: false,
     },
@@ -69,15 +69,22 @@ const main = defineCommand({
     },
     headless: {
       type: "boolean",
-      default: true,
-      description: "Disable headless mode - will show browser UI",
+      default: !DEFAULT_OPTIONS.noHeadless,
+      description:
+        "Disable headless mode - will show browser UI. Useful for debugging.",
       required: false,
     },
     force: {
       type: "boolean",
-      default: false,
+      default: DEFAULT_OPTIONS.force,
       description:
         "Force scraping content even if page hasn't fully loaded, 1 second before timeout",
+      required: false,
+    },
+    timeout: {
+      type: "string",
+      default: DEFAULT_OPTIONS.timeout.toString(),
+      description: "Navigation timeout in milliseconds",
       required: false,
     },
   },
@@ -93,9 +100,12 @@ const main = defineCommand({
       "scope-url": scopeUrl,
       headless,
       force,
+      timeout: timeoutString,
     } = args
+
     const depth = parseInt(depthString, 10)
     const concurrency = parseInt(concurrencyString, 10)
+    const timeout = parseInt(timeoutString, 10)
 
     if (verbose) {
       consola.level = 4
@@ -109,6 +119,7 @@ const main = defineCommand({
       scopeUrl,
       noHeadless: !headless,
       force,
+      timeout,
     })
 
     if (singleFile) {

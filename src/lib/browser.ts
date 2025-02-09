@@ -2,38 +2,6 @@ import { Browser, BrowserContext, Page, chromium } from "playwright"
 
 import { ConfigManager } from "./config"
 
-export class PagePool {
-  private pageIndex = 0
-  private pageInUse: Array<boolean>
-
-  constructor(private pages: Array<Page>) {
-    this.pageInUse = new Array<boolean>(pages.length).fill(false)
-  }
-
-  async getAvailablePage(): Promise<Page> {
-    // Keep trying until we find an available page
-    while (true) {
-      for (let i = 0; i < this.pages.length; i++) {
-        const currentIndex = (this.pageIndex + i) % this.pages.length
-        if (!this.pageInUse[currentIndex]) {
-          this.pageInUse[currentIndex] = true
-          this.pageIndex = (currentIndex + 1) % this.pages.length
-          return this.pages[currentIndex]
-        }
-      }
-      // If no page is available, wait a bit and try again
-      await new Promise((resolve) => setTimeout(resolve, 100))
-    }
-  }
-
-  releasePage(page: Page): void {
-    const index = this.pages.indexOf(page)
-    if (index !== -1) {
-      this.pageInUse[index] = false
-    }
-  }
-}
-
 export class BrowserManager {
   private static instance: BrowserManager | null = null
   private browser: Browser | null = null
@@ -82,6 +50,38 @@ export class BrowserManager {
     if (this.browser) {
       await this.browser.close()
       this.browser = null
+    }
+  }
+}
+
+export class PagePool {
+  private pageIndex = 0
+  private pageInUse: Array<boolean>
+
+  constructor(private pages: Array<Page>) {
+    this.pageInUse = new Array<boolean>(pages.length).fill(false)
+  }
+
+  async getAvailablePage(): Promise<Page> {
+    // Keep trying until we find an available page
+    while (true) {
+      for (let i = 0; i < this.pages.length; i++) {
+        const currentIndex = (this.pageIndex + i) % this.pages.length
+        if (!this.pageInUse[currentIndex]) {
+          this.pageInUse[currentIndex] = true
+          this.pageIndex = (currentIndex + 1) % this.pages.length
+          return this.pages[currentIndex]
+        }
+      }
+      // If no page is available, wait a bit and try again
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+  }
+
+  releasePage(page: Page): void {
+    const index = this.pages.indexOf(page)
+    if (index !== -1) {
+      this.pageInUse[index] = false
     }
   }
 }
