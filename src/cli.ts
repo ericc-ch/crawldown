@@ -73,6 +73,13 @@ const main = defineCommand({
       description: "Disable headless mode - will show browser UI",
       required: false,
     },
+    force: {
+      type: "boolean",
+      default: false,
+      description:
+        "Force scraping content even if page hasn't fully loaded, 1 second before timeout",
+      required: false,
+    },
   },
   run: async ({ args }) => {
     const {
@@ -85,6 +92,7 @@ const main = defineCommand({
       concurrency: concurrencyString,
       "scope-url": scopeUrl,
       headless,
+      force,
     } = args
     const depth = parseInt(depthString, 10)
     const concurrency = parseInt(concurrencyString, 10)
@@ -100,6 +108,7 @@ const main = defineCommand({
       concurrency,
       scopeUrl,
       noHeadless: !headless,
+      force,
     })
 
     if (singleFile) {

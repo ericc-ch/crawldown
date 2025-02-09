@@ -11,6 +11,7 @@ export interface CrawlContext {
   limit: ReturnType<typeof pLimit>
   results: Array<CrawlResult>
   scopeUrl: string
+  force: boolean
 }
 
 export interface CrawlOptions {
@@ -20,6 +21,7 @@ export interface CrawlOptions {
   concurrency?: number
   scopeUrl?: string
   noHeadless?: boolean
+  force?: boolean
 }
 
 export interface CrawlResult {

@@ -23,6 +23,7 @@ export const defaultOptions = {
   depth: 0,
   concurrency: 4,
   noHeadless: false,
+  force: false,
 } satisfies Partial<CrawlOptions>
 
 async function processSingleUrl({
@@ -41,7 +42,7 @@ async function processSingleUrl({
     const page = await context.pagePool.getAvailablePage()
 
     try {
-      const html = await scrapeHtml(page, url)
+      const html = await scrapeHtml(page, url, context.force)
       const dom = new JSDOM(html)
       const reader = new Readability(dom.window.document)
       const article = reader.parse()
@@ -152,6 +153,7 @@ export async function crawl(
       limit: pLimit(processedOptions.concurrency),
       results: [],
       scopeUrl: options.scopeUrl ?? processedOptions.url,
+      force: processedOptions.force,
     }
 
     context.urlsByDepth.set(processedOptions.depth, [processedOptions.url])
