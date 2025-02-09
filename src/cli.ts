@@ -75,6 +75,7 @@ const main = defineCommand({
       required: false,
     },
     force: {
+      alias: "f",
       type: "boolean",
       default: DEFAULT_OPTIONS.force,
       description:
@@ -82,6 +83,7 @@ const main = defineCommand({
       required: false,
     },
     timeout: {
+      alias: "t",
       type: "string",
       default: DEFAULT_OPTIONS.timeout.toString(),
       description: "Navigation timeout in milliseconds",

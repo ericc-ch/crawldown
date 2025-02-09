@@ -53,8 +53,14 @@ npx crawldown https://example.com --single-file -o result.md
 # Force scraping even if page hasn't loaded completely
 npx crawldown https://example.com --force
 
+# Force scraping with short flag
+npx crawldown https://example.com -f
+
 # Set custom navigation timeout (default: 10000ms)
 npx crawldown https://example.com --timeout 30000
+
+# Set timeout with short flag
+npx crawldown https://example.com -t 30000
 
 # Enable verbose logging
 npx crawldown https://example.com -v
@@ -79,8 +85,8 @@ npx crawldown https://example.com --scope-url https://example.com/docs
 - `--single-file`: Output all results to a single markdown file instead of a directory structure (default: false)
 - `-c, --concurrency`: Number of concurrent pages to use (default: "4")
 - `--scope-url`: URL that defines the crawling scope. Links outside this scope will be ignored
-- `--force`: When enabled, if page load is taking too long, captures page content 1 second before the timeout would occur. This ensures content is retrieved even if the page never fully loads (default: false)
-- `--timeout`: Navigation timeout in milliseconds (default: 10000)
+- `-f, --force`: When enabled, if page load is taking too long, captures page content 1 second before the timeout would occur. This ensures content is retrieved even if the page never fully loads (default: false)
+- `-t, --timeout`: Navigation timeout in milliseconds (default: 10000)
 
 ## Programmatic Usage
 
