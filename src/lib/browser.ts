@@ -60,6 +60,7 @@ export class BrowserManager {
       const config = ConfigManager.getInstance().getConfig()
       this.browser = await chromium.launch({
         executablePath: config.browserPath ?? undefined,
+        headless: config.headless,
       })
     }
 

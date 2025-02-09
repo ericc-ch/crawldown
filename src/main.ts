@@ -22,6 +22,7 @@ import {
 export const defaultOptions = {
   depth: 0,
   concurrency: 4,
+  noHeadless: false,
 } satisfies Partial<CrawlOptions>
 
 async function processSingleUrl({
@@ -117,9 +118,10 @@ export async function crawl(
 
   processedOptions.url = withoutTrailingSlash(processedOptions.url)
 
-  if (processedOptions.browserPath) {
+  if (processedOptions.browserPath || processedOptions.noHeadless) {
     ConfigManager.getInstance().setConfig({
       browserPath: processedOptions.browserPath,
+      headless: !processedOptions.noHeadless,
     })
   }
 

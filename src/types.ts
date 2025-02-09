@@ -19,6 +19,7 @@ export interface CrawlOptions {
   browserPath?: string
   concurrency?: number
   scopeUrl?: string
+  noHeadless?: boolean
 }
 
 export interface CrawlResult {

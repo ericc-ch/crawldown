@@ -67,6 +67,12 @@ const main = defineCommand({
         "URL that defines the crawling scope. Links outside this scope will be ignored",
       required: false,
     },
+    headless: {
+      type: "boolean",
+      default: true,
+      description: "Disable headless mode - will show browser UI",
+      required: false,
+    },
   },
   run: async ({ args }) => {
     const {
@@ -78,6 +84,7 @@ const main = defineCommand({
       "single-file": singleFile,
       concurrency: concurrencyString,
       "scope-url": scopeUrl,
+      headless,
     } = args
     const depth = parseInt(depthString, 10)
     const concurrency = parseInt(concurrencyString, 10)
@@ -92,6 +99,7 @@ const main = defineCommand({
       browserPath,
       concurrency,
       scopeUrl,
+      noHeadless: !headless,
     })
 
     if (singleFile) {
