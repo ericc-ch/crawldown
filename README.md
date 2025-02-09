@@ -50,6 +50,12 @@ npx crawldown https://example.com --single-file -o result
 # Output to a single file with explicit .md extension
 npx crawldown https://example.com --single-file -o result.md
 
+# Force scraping even if page hasn't loaded completely
+npx crawldown https://example.com --force
+
+# Set custom navigation timeout (default: 10000ms)
+npx crawldown https://example.com --timeout 30000
+
 # Enable verbose logging
 npx crawldown https://example.com -v
 
@@ -73,6 +79,8 @@ npx crawldown https://example.com --scope-url https://example.com/docs
 - `--single-file`: Output all results to a single markdown file instead of a directory structure (default: false)
 - `-c, --concurrency`: Number of concurrent pages to use (default: "4")
 - `--scope-url`: URL that defines the crawling scope. Links outside this scope will be ignored
+- `--force`: When enabled, if page load is taking too long, captures page content 1 second before the timeout would occur. This ensures content is retrieved even if the page never fully loads (default: false)
+- `--timeout`: Navigation timeout in milliseconds (default: 10000)
 
 ## Programmatic Usage
 
@@ -88,6 +96,8 @@ async function main() {
     browserPath: "/path/to/chrome", // Optional: custom browser executable path
     concurrency: 4, // Optional: number of concurrent pages (default: 4)
     scopeUrl: "https://example.com/docs", // Optional: URL that defines crawling scope
+    force: false, // Optional: force scraping before timeout (default: false)
+    timeout: 10000, // Optional: navigation timeout in ms (default: 10000)
   });
 
   // Each result contains:
