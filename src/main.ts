@@ -45,7 +45,12 @@ async function processSingleUrl({
     const page = await context.pagePool.getAvailablePage()
 
     try {
-      const html = await scrapeHtml(page, url, context.force, context.timeout)
+      const html = await scrapeHtml({
+        page,
+        url,
+        force: context.force,
+        timeout: context.timeout,
+      })
       const dom = new JSDOM(html)
       const reader = new Readability(dom.window.document)
       const article = reader.parse()

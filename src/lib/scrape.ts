@@ -3,12 +3,19 @@ import type { Page } from "playwright"
 export const DEFAULT_TIMEOUT = 10_000
 export const DEFAULT_FORCE = false
 
-export async function scrapeHtml(
-  page: Page,
-  url: string,
+interface ScrapeHtmlParams {
+  page: Page
+  url: string
+  force?: boolean
+  timeout?: number
+}
+
+export async function scrapeHtml({
+  page,
+  url,
   force = DEFAULT_FORCE,
   timeout = DEFAULT_TIMEOUT,
-): Promise<string> {
+}: ScrapeHtmlParams): Promise<string> {
   try {
     if (force) {
       const safetyMarginMs = 1000 // Get content 1 second before timeout
