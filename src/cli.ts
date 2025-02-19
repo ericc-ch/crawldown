@@ -141,7 +141,7 @@ const main = defineCommand({
         const sanitizedPath = urlObj.pathname
           .replace(/\/$/, "") // Remove trailing slash
           .replace(/^\//, "") // Remove leading slash
-          .replace(/[^a-zA-Z0-9/]/g, "_") // Replace special chars with underscore
+          .replace(/[^a-z0-9/]/gi, "_") // Replace special chars with underscore
 
         let dirPath: string
         let fileName: string
