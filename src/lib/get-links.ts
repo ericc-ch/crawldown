@@ -31,11 +31,13 @@ export function getLinks(html: string, scopeUrl: string): Array<string> {
         !href.startsWith("tel:") &&
         !href.startsWith("#"),
     )
-    .map((url) =>
-      isRelative(url) || !hasProtocol(url) ?
-        joinRelativeURL(base.pathname, url)
-      : url,
-    )
+    .map((url) => {
+      if (isRelative(url) || (!hasProtocol(url) && !url.startsWith("/"))) {
+        return joinRelativeURL(base.pathname, url)
+      }
+
+      return url
+    })
     // We already threw an error if base.host is undefined
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     .map((url) => withHttps(withBase(url, base.host!)))
