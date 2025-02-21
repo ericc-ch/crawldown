@@ -34,7 +34,10 @@ describe("getLinks", () => {
       <a href="./child">Child</a>
       <a href="sibling">Sibling</a>
     `
-    expect(getLinks(html, baseUrl)).toEqual(["https://example.com/docs/child"])
+    expect(getLinks(html, baseUrl)).toEqual([
+      "https://example.com/docs/child",
+      "https://example.com/docs/sibling",
+    ])
   })
 
   it("filters out external domains", () => {
