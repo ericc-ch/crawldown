@@ -68,7 +68,7 @@ async function processSingleUrl({
       return {
         url,
         markdown,
-        title: article.title,
+        title: article.title ?? url,
       }
     } finally {
       context.pagePool.releasePage(page)
